@@ -4,6 +4,11 @@ plugins {
     id("maven-publish")
 }
 
+
+group  = "com.github.moclam1905"
+version = "1.0"
+
+
 android {
     namespace = "com.nguyenmoclam.kbloom"
     compileSdk = 35
@@ -33,6 +38,21 @@ android {
     }
 }
 
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "com.github.moclam1905"
+                artifactId = "kbloom"
+                version = "1.0"
+
+                from(components["release"])
+            }
+        }
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -42,6 +62,3 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
-
-group  = "com.github.moclam1905"
-version = "1.0"
