@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+kbloom = "1.0"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -14,6 +15,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kbloom = { module = "com.github.moclam1905:KBloom", version.ref = "kbloom" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
