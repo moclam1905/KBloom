@@ -97,6 +97,7 @@ fun exampleUsage() {
 
 [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter)
 [MurmurHash](https://en.wikipedia.org/wiki/MurmurHash)
+[Medium]([https://en.wikipedia.org/wiki/MurmurHash](https://medium.com/@moclam1905/understanding-bloom-filters-with-murmurhash3-in-kotlin-22e762db8cf5))
 
 ## License
 
