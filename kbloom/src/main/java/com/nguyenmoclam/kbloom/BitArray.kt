@@ -3,9 +3,7 @@ package com.nguyenmoclam.kbloom
 /**
  * A simple bit array implementation. Uses IntArray to store the bits.
  */
-class BitArray(private val size: Int) {
-    private val array: IntArray = IntArray((size + 31) / 32) // divide by 32 to have enough elements
-
+class BitArray(private val size: Int, val array: IntArray = IntArray((size + 31) / 32)) {
 
     /**
      * Put the bit at `index` to 1

@@ -22,17 +22,23 @@ class BloomFilterTest {
             bf.put(it)
         }
 
+        // Serialize the BloomFilter
+        val serialized = bf.serialize()
+
+        // Deserialize the BloomFilter
+        val bfDeserialized = BloomFilter.deserialize(serialized)
+
 
         // Check if the inserted elements are in the BloomFilter
         insertedElements.forEach { element ->
-            assertTrue("BloomFilter should contain $element", bf.mightContain(element))
+            assertTrue("BloomFilter should contain $element", bfDeserialized.mightContain(element))
         }
 
 
         // Check if the not inserted elements are in the BloomFilter
         val notInsertedElements = listOf("honeydew", "kiwi", "lemon")
         notInsertedElements.forEach { element ->
-            val result = bf.mightContain(element)
+            val result = bfDeserialized.mightContain(element)
 
             // There might be false positives, but with fpp = 1%, most of them will be false
             if (result) {
@@ -41,5 +47,30 @@ class BloomFilterTest {
 
             // Do not assert false, because there might be false positives
         }
+    }
+
+    @Test
+    fun testBloomFilterFalsePositiveRate(){
+        val expectedInsertions = 1000
+        val fpp = 0.01
+        val bf = BloomFilter.create(expectedInsertions, fpp)
+        for (i in 0 until expectedInsertions) {
+            bf.put("element_$i")
+        }
+
+        var falsePositives = 0
+        val testSize = 10000
+        // Check for false positives
+        for (i in expectedInsertions until expectedInsertions + testSize) {
+            if (bf.mightContain("element_$i")) {
+                falsePositives++
+            }
+        }
+
+        val actualFpp = falsePositives.toDouble() / testSize
+        println("Actual FPP: $actualFpp")
+
+        // allow 50% more than the expected FPP
+        assertTrue("Actual FPP should be less than or equal to $fpp", actualFpp <= fpp * 1.5)
     }
 }

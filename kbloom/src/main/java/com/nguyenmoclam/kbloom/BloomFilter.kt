@@ -1,5 +1,6 @@
 package com.nguyenmoclam.kbloom
 
+import java.nio.ByteBuffer
 import kotlin.math.ceil
 import kotlin.math.ln
 import kotlin.math.roundToInt
@@ -99,5 +100,50 @@ class BloomFilter private constructor(
             return ceil(numerator / denominator).toInt()
 
         }
+
+        /**
+         * Deserialize the byte array to a BloomFilter
+         */
+
+        fun deserialize(byteArray: ByteArray): BloomFilter {
+            require(byteArray.size >= 12) { "byteArray must have at least 12 bytes" }
+
+            val byteBuffer = ByteBuffer.wrap(byteArray)
+            val m = byteBuffer.int
+            val k = byteBuffer.int
+            val seed = byteBuffer.int
+
+            // purpose of this calculation is to get the number of ints in the bitArray
+            // each int in bitArray stores 32 bits -> (m + 31) / 32
+            val numInts = (m + 31) / 32
+            require(byteArray.size == 12 + (numInts * 4)) { "byteArray size is not correct" }
+
+            val array = IntArray(numInts)
+            for (i in 0 until numInts) {
+                array[i] = byteBuffer.int
+            }
+
+            return BloomFilter(m, k, BitArray(m, array), seed)
+        }
     }
+
+    /**
+     * Serialize the BloomFilter to a byte array
+     */
+    fun serialize(): ByteArray {
+        // 4 bytes for bitSetSize, 4 bytes for numHashFunctions, 4 bytes for seed => 12 bytes
+        // number_of_ints_in_bitArray = m/32 cause each int in bitArray stores 32 bits
+        // size of each element in bitArray = 4 * number_of_ints_in_bitArray
+        val byteBuffer = ByteBuffer.allocate(12 + (bitArray.array.size * 4))
+
+        byteBuffer.putInt(bitSetSize)
+        byteBuffer.putInt(numHashFunctions)
+        byteBuffer.putInt(seed)
+
+        for (word in bitArray.array) {
+            byteBuffer.putInt(word)
+        }
+        return byteBuffer.array()
+    }
+
 }
