@@ -12,7 +12,7 @@ class BloomFilterTest {
         val seed = 1234
 
         // Create a BloomFilter with expectedInsertions, fpp, and seed
-        val bf = BloomFilter.create(expectedInsertions, fpp, seed)
+        val bf = BloomFilter.create<String>(expectedInsertions, fpp, seed, hashFunction = { it.toByteArray(Charsets.UTF_8) })
 
 
         // Insert some elements
@@ -26,7 +26,7 @@ class BloomFilterTest {
         val serialized = bf.serialize()
 
         // Deserialize the BloomFilter
-        val bfDeserialized = BloomFilter.deserialize(serialized)
+        val bfDeserialized = BloomFilter.deserialize<String>(serialized, hashFunction = { it.toByteArray(Charsets.UTF_8) })
 
 
         // Check if the inserted elements are in the BloomFilter
@@ -53,7 +53,7 @@ class BloomFilterTest {
     fun testBloomFilterFalsePositiveRate(){
         val expectedInsertions = 1000
         val fpp = 0.01
-        val bf = BloomFilter.create(expectedInsertions, fpp)
+        val bf = BloomFilter.create<String>(expectedInsertions, fpp, hashFunction = { it.toByteArray(Charsets.UTF_8) })
         for (i in 0 until expectedInsertions) {
             bf.put("element_$i")
         }

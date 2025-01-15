@@ -8,29 +8,30 @@ import kotlin.math.roundToInt
 
 /**
  * BloomFilter simple implementation (v1.0) using MurmurHash3 (32-bit)
- * - Support String
+ * - T: type of the value to be stored in the BloomFilter
  * - Automatically calculate bitSetSize (m) and numHashFunctions (k) from expectedInsertions & fpp
  * - seed: seed value to mix into the hash function
  */
-class BloomFilter private constructor(
+class BloomFilter<T> private constructor(
     private val bitSetSize: Int,
     private val numHashFunctions: Int,
     private val bitArray: BitArray,
-    private val seed: Int
+    private val seed: Int,
+    private val hashFunction: (T) -> ByteArray
 ) {
 
     /**
      * Call MurmurHash3 to hash the string value
      */
-    private fun murmurHash(value: String, seedParam: Int): Int {
-        val bytes = value.toByteArray(Charsets.UTF_8)
+    private fun murmurHash(value: T, seedParam: Int): Int {
+        val bytes = hashFunction(value)
         return MurmurHash3.murmur3_32(bytes, 0, bytes.size, seedParam)
     }
 
     /**
      * Add a string value to the BloomFilter
      */
-    fun put(value: String) {
+    fun put(value: T) {
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
@@ -44,7 +45,7 @@ class BloomFilter private constructor(
      * return True if the value might be in the BloomFilter (but not guaranteed)
      * return False if the value is definitely not in the BloomFilter
      */
-    fun mightContain(value: String): Boolean {
+    fun mightContain(value: T): Boolean {
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
@@ -62,7 +63,12 @@ class BloomFilter private constructor(
          * @param fpp: false positive probability (0 < fpp < 1)
          * @param seed: seed value for MurMurHash (default 0)
          */
-        fun create(expectedInsertions: Int, fpp: Double, seed: Int = 0): BloomFilter {
+        fun <T> create(
+            expectedInsertions: Int,
+            fpp: Double,
+            seed: Int = 0,
+            hashFunction: (T) -> ByteArray
+        ): BloomFilter<T> {
             require(expectedInsertions > 0) { "expectedInsertions must be > 0" }
             require(fpp in (0.0..1.0)) { "fpp must be in (0,1]" }
 
@@ -73,7 +79,8 @@ class BloomFilter private constructor(
                 bitSetSize = m,
                 numHashFunctions = k,
                 bitArray = BitArray(m),
-                seed = seed
+                seed = seed,
+                hashFunction = hashFunction
             )
         }
 
@@ -105,7 +112,9 @@ class BloomFilter private constructor(
          * Deserialize the byte array to a BloomFilter
          */
 
-        fun deserialize(byteArray: ByteArray): BloomFilter {
+        fun <T>deserialize(
+            byteArray: ByteArray,
+            hashFunction: (T) -> ByteArray): BloomFilter<T> {
             require(byteArray.size >= 12) { "byteArray must have at least 12 bytes" }
 
             val byteBuffer = ByteBuffer.wrap(byteArray)
@@ -123,7 +132,7 @@ class BloomFilter private constructor(
                 array[i] = byteBuffer.int
             }
 
-            return BloomFilter(m, k, BitArray(m, array), seed)
+            return BloomFilter(m, k, BitArray(m, array), seed, hashFunction)
         }
     }
 

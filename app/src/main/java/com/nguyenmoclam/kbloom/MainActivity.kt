@@ -24,7 +24,7 @@ import java.util.Base64
 
 @RequiresApi(Build.VERSION_CODES.O)
 class MainActivity : AppCompatActivity() {
-    private lateinit var bloomFilter: BloomFilter
+    private lateinit var bloomFilter: BloomFilter<String>
     private lateinit var sharedPreferences: SharedPreferences
 
     private val PREFS_NAME = "BloomFilter"
@@ -90,16 +90,17 @@ class MainActivity : AppCompatActivity() {
      * If have serialized BloomFilter, deserialize it
      * Otherwise, create a new BloomFilter
      */
-    private fun initializeBloomFilter(): BloomFilter {
+    private fun initializeBloomFilter(): BloomFilter<String> {
         val serialized = sharedPreferences.getString(PREFS_KEY, null)
         return if (serialized != null) {
             val byteArray = Base64.getDecoder().decode(serialized)
-            BloomFilter.deserialize(byteArray)
+            BloomFilter.deserialize(byteArray, hashFunction = { it.toByteArray(Charsets.UTF_8) })
         } else {
             BloomFilter.create(
                 expectedInsertions = 1000,
                 fpp = 0.01,
-                seed = 1234
+                seed = 1234,
+                hashFunction = { it.toByteArray(Charsets.UTF_8) }
             )
         }
     }
@@ -125,11 +126,11 @@ class MainActivity : AppCompatActivity() {
         file.writeBytes(serialized)
     }
 
-    private fun loadBFFromFile(): BloomFilter? {
+    private fun loadBFFromFile(): BloomFilter<String>? {
         val file = File(filesDir, "bloom_filter.dat")
         return if (file.exists()) {
             val serialized = file.readBytes()
-            BloomFilter.deserialize(serialized)
+            BloomFilter.deserialize(serialized, hashFunction = { it.toByteArray(Charsets.UTF_8) })
         } else {
             null
         }
