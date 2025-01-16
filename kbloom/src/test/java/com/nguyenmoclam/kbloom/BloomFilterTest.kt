@@ -1,5 +1,6 @@
 package com.nguyenmoclam.kbloom
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -105,5 +106,22 @@ class BloomFilterTest {
 
         val rs = bf.mightContain("date")
         println("mightContain 'date'? $rs")
+    }
+
+    @Test
+    fun testBFWithBulkElements() {
+        val bf = BloomFilter.create<String>(
+            expectedInsertions = 1000,
+            fpp = 0.01,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) }
+        )
+
+        val elements = listOf("apple", "banana", "cherry", "date", "elderberry", "fig", "grape")
+        bf.putAll(elements)
+
+        val containsAll = bf.mightContainAll(elements)
+        println("mightContainAll? $containsAll")
+
+        assertFalse("BloomFilter should not contain 'kiwi'", bf.mightContain("kiwi"))
     }
 }

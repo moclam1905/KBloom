@@ -21,7 +21,7 @@ class BloomFilter<T> private constructor(
 ) {
 
     /**
-     * Call MurmurHash3 to hash the string value
+     * Call MurmurHash3 to hash the T value
      */
     private fun murmurHash(value: T, seedParam: Int): Int {
         val bytes = hashFunction(value)
@@ -29,7 +29,7 @@ class BloomFilter<T> private constructor(
     }
 
     /**
-     * Add a string value to the BloomFilter
+     * Add a T value to the BloomFilter
      */
     fun put(value: T) {
         for (i in 0 until numHashFunctions) {
@@ -39,9 +39,18 @@ class BloomFilter<T> private constructor(
         }
     }
 
+    /**
+     * Add multiple T values to the BloomFilter
+     */
+    fun putAll(values: Iterable<T>) {
+        for (value in values) {
+            put(value)
+        }
+    }
+
 
     /**
-     * Check if the BloomFilter might contain the string value
+     * Check if the BloomFilter might contain the T value
      * return True if the value might be in the BloomFilter (but not guaranteed)
      * return False if the value is definitely not in the BloomFilter
      */
@@ -53,6 +62,20 @@ class BloomFilter<T> private constructor(
                 return false
             }
         }
+        return true
+    }
+
+    /**
+     * Check if the BloomFilter might contain multiple T values
+     * return True if the values might be in the BloomFilter (but not guaranteed)
+     */
+    fun mightContainAll(values: Iterable<T>): Boolean {
+        for (value in values) {
+            if (!mightContain(value)) {
+                return false
+            }
+        }
+
         return true
     }
 
