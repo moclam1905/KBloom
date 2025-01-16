@@ -22,6 +22,15 @@ class BitArray(private val size: Int, val array: IntArray = IntArray((size + 31)
         val bitPosition = index % 32
         return (array[wordIndex] and (1 shl bitPosition)) != 0
     }
+
+    /**
+     * Reset all bits to 0
+     */
+    fun clear() {
+        for (i in array.indices) {
+            array[i] = 0
+        }
+    }
 }
 
 /**

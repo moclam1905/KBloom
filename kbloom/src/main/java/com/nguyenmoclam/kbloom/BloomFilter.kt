@@ -32,6 +32,7 @@ class BloomFilter<T> private constructor(
      * Add a T value to the BloomFilter
      */
     fun put(value: T) {
+        requireNotNull(value) { "value cannot be null" }
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
@@ -55,6 +56,7 @@ class BloomFilter<T> private constructor(
      * return False if the value is definitely not in the BloomFilter
      */
     fun mightContain(value: T): Boolean {
+        requireNotNull(value) { "value cannot be null" }
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
@@ -182,5 +184,28 @@ class BloomFilter<T> private constructor(
         }
         return byteBuffer.array()
     }
+
+    /**
+     * Delete all elements in the BloomFilter
+     */
+    fun clear() {
+        bitArray.clear()
+    }
+
+    /**
+     * Get the size of the bit array
+     */
+    fun getBitSetSize(): Int = bitSetSize
+
+    /**
+     * Get the number of hash functions (k)
+     */
+    fun getNumHashFunctions(): Int = numHashFunctions
+
+    /**
+     * Get seed value
+     */
+    fun getSeed(): Int = seed
+
 
 }
