@@ -12,7 +12,11 @@ class BloomFilterTest {
         val seed = 1234
 
         // Create a BloomFilter with expectedInsertions, fpp, and seed
-        val bf = BloomFilter.create<String>(expectedInsertions, fpp, seed, hashFunction = { it.toByteArray(Charsets.UTF_8) })
+        val bf = BloomFilter.create<String>(
+            expectedInsertions,
+            fpp,
+            seed,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) })
 
 
         // Insert some elements
@@ -26,7 +30,9 @@ class BloomFilterTest {
         val serialized = bf.serialize()
 
         // Deserialize the BloomFilter
-        val bfDeserialized = BloomFilter.deserialize<String>(serialized, hashFunction = { it.toByteArray(Charsets.UTF_8) })
+        val bfDeserialized = BloomFilter.deserialize<String>(
+            serialized,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) })
 
 
         // Check if the inserted elements are in the BloomFilter
@@ -50,10 +56,13 @@ class BloomFilterTest {
     }
 
     @Test
-    fun testBloomFilterFalsePositiveRate(){
+    fun testBloomFilterFalsePositiveRate() {
         val expectedInsertions = 1000
         val fpp = 0.01
-        val bf = BloomFilter.create<String>(expectedInsertions, fpp, hashFunction = { it.toByteArray(Charsets.UTF_8) })
+        val bf = BloomFilter.create<String>(
+            expectedInsertions,
+            fpp,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) })
         for (i in 0 until expectedInsertions) {
             bf.put("element_$i")
         }
@@ -72,5 +81,29 @@ class BloomFilterTest {
 
         // allow 50% more than the expected FPP
         assertTrue("Actual FPP should be less than or equal to $fpp", actualFpp <= fpp * 1.5)
+    }
+
+    @Test
+    fun testBFWithCustomK() {
+        // use custom k
+        val customK = 11
+
+        val bf = BloomFilter.create<String>(
+            expectedInsertions = 1000,
+            fpp = 0.01,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            numHashFunctions = customK
+        )
+
+
+        bf.put("apple")
+        bf.put("banana")
+        bf.put("cherry")
+
+        val rsApple = bf.mightContain("apple")
+        println("mightContain 'apple'? $rsApple")
+
+        val rs = bf.mightContain("date")
+        println("mightContain 'date'? $rs")
     }
 }

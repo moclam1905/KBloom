@@ -94,9 +94,11 @@ class MainActivity : AppCompatActivity() {
         val serialized = sharedPreferences.getString(PREFS_KEY, null)
         return if (serialized != null) {
             val byteArray = Base64.getDecoder().decode(serialized)
-            BloomFilter.deserialize(byteArray, hashFunction = { it.toByteArray(Charsets.UTF_8) })
+            BloomFilter.deserialize<String>(
+                byteArray,
+                hashFunction = { it.toByteArray(Charsets.UTF_8) })
         } else {
-            BloomFilter.create(
+            BloomFilter.create<String>(
                 expectedInsertions = 1000,
                 fpp = 0.01,
                 seed = 1234,

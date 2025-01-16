@@ -9,8 +9,8 @@ import kotlin.math.roundToInt
 /**
  * BloomFilter simple implementation (v1.0) using MurmurHash3 (32-bit)
  * - T: type of the value to be stored in the BloomFilter
- * - Automatically calculate bitSetSize (m) and numHashFunctions (k) from expectedInsertions & fpp
  * - seed: seed value to mix into the hash function
+ * - support serialization/deserialization
  */
 class BloomFilter<T> private constructor(
     private val bitSetSize: Int,
@@ -62,18 +62,22 @@ class BloomFilter<T> private constructor(
          * @param expectedInsertions: expected number of elements
          * @param fpp: false positive probability (0 < fpp < 1)
          * @param seed: seed value for MurMurHash (default 0)
+         * @param numHashFunctions: number of hash functions to use (if not specified, will be calculated)
+         * @param hashFunction: function to convert T to ByteArray
          */
         fun <T> create(
             expectedInsertions: Int,
             fpp: Double,
             seed: Int = 0,
+            numHashFunctions: Int? = null,
             hashFunction: (T) -> ByteArray
         ): BloomFilter<T> {
             require(expectedInsertions > 0) { "expectedInsertions must be > 0" }
             require(fpp in (0.0..1.0)) { "fpp must be in (0,1]" }
 
             val m = optimalBitSetSize(expectedInsertions, fpp)
-            val k = optimalNumHashFunctions(expectedInsertions, m)
+            val k = numHashFunctions ?: optimalNumHashFunctions(expectedInsertions, m)
+            require(k > 0) { "numHashFunctions must be > 0" }
 
             return BloomFilter(
                 bitSetSize = m,
@@ -112,9 +116,10 @@ class BloomFilter<T> private constructor(
          * Deserialize the byte array to a BloomFilter
          */
 
-        fun <T>deserialize(
+        fun <T> deserialize(
             byteArray: ByteArray,
-            hashFunction: (T) -> ByteArray): BloomFilter<T> {
+            hashFunction: (T) -> ByteArray
+        ): BloomFilter<T> {
             require(byteArray.size >= 12) { "byteArray must have at least 12 bytes" }
 
             val byteBuffer = ByteBuffer.wrap(byteArray)
