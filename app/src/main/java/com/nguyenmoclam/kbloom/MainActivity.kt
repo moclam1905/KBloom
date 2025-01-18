@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val PREFS_KEY = "BloomFilterKey"
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private val saveChannel = Channel<Unit>(Channel.CONFLATED)
+    private val consoleLogger = DefaultLogger
 
     @OptIn(FlowPreview::class)
     @SuppressLint("SetTextI18n")
@@ -96,13 +97,15 @@ class MainActivity : AppCompatActivity() {
             val byteArray = Base64.getDecoder().decode(serialized)
             BloomFilter.deserialize<String>(
                 byteArray,
-                hashFunction = { it.toByteArray(Charsets.UTF_8) })
+                hashFunction = { it.toByteArray(Charsets.UTF_8) },
+                logger = consoleLogger)
         } else {
             BloomFilter.create<String>(
                 expectedInsertions = 1000,
                 fpp = 0.01,
                 seed = 1234,
-                hashFunction = { it.toByteArray(Charsets.UTF_8) }
+                hashFunction = { it.toByteArray(Charsets.UTF_8) },
+                logger = consoleLogger
             )
         }
     }

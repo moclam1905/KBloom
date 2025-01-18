@@ -17,7 +17,8 @@ class BloomFilter<T> private constructor(
     private val numHashFunctions: Int,
     private val bitArray: BitArray,
     private val seed: Int,
-    private val hashFunction: (T) -> ByteArray
+    private val hashFunction: (T) -> ByteArray,
+    private val logger: Logger = DefaultLogger
 ) {
 
     /**
@@ -33,10 +34,12 @@ class BloomFilter<T> private constructor(
      */
     fun put(value: T) {
         requireNotNull(value) { "value cannot be null" }
+        logger.log("Adding value: $value")
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
             bitArray.set(index)
+            logger.log("Set bit at index: $index using hash function ${seed + i}")
         }
     }
 
@@ -44,6 +47,7 @@ class BloomFilter<T> private constructor(
      * Add multiple T values to the BloomFilter
      */
     fun putAll(values: Iterable<T>) {
+        logger.log("Adding multiple values: $values")
         for (value in values) {
             put(value)
         }
@@ -57,13 +61,17 @@ class BloomFilter<T> private constructor(
      */
     fun mightContain(value: T): Boolean {
         requireNotNull(value) { "value cannot be null" }
+        logger.log("Checking value: $value")
         for (i in 0 until numHashFunctions) {
             val hashVal = murmurHash(value, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
+            logger.log("Checking bit at index: $index using hash function ${seed + i}")
             if (!bitArray.get(index)) {
+                logger.log("Value $value is definitely not in the BloomFilter")
                 return false
             }
         }
+        logger.log("Value $value might be in the BloomFilter")
         return true
     }
 
@@ -72,12 +80,15 @@ class BloomFilter<T> private constructor(
      * return True if the values might be in the BloomFilter (but not guaranteed)
      */
     fun mightContainAll(values: Iterable<T>): Boolean {
+        logger.log("Checking multiple values: $values")
         for (value in values) {
             if (!mightContain(value)) {
+                logger.log("One of the values is definitely not in the BloomFilter")
                 return false
             }
         }
 
+        logger.log("All values might be in the BloomFilter")
         return true
     }
 
@@ -95,7 +106,8 @@ class BloomFilter<T> private constructor(
             fpp: Double,
             seed: Int = 0,
             numHashFunctions: Int? = null,
-            hashFunction: (T) -> ByteArray
+            hashFunction: (T) -> ByteArray,
+            logger: Logger = DefaultLogger
         ): BloomFilter<T> {
             require(expectedInsertions > 0) { "expectedInsertions must be > 0" }
             require(fpp in (0.0..1.0)) { "fpp must be in (0,1]" }
@@ -104,12 +116,14 @@ class BloomFilter<T> private constructor(
             val k = numHashFunctions ?: optimalNumHashFunctions(expectedInsertions, m)
             require(k > 0) { "numHashFunctions must be > 0" }
 
+            logger.log("Creating BloomFilter with m = $m, k = $k, seed = $seed")
             return BloomFilter(
                 bitSetSize = m,
                 numHashFunctions = k,
                 bitArray = BitArray(m),
                 seed = seed,
-                hashFunction = hashFunction
+                hashFunction = hashFunction,
+                logger = logger
             )
         }
 
@@ -143,7 +157,8 @@ class BloomFilter<T> private constructor(
 
         fun <T> deserialize(
             byteArray: ByteArray,
-            hashFunction: (T) -> ByteArray
+            hashFunction: (T) -> ByteArray,
+            logger: Logger = DefaultLogger
         ): BloomFilter<T> {
             require(byteArray.size >= 12) { "byteArray must have at least 12 bytes" }
 
@@ -162,6 +177,7 @@ class BloomFilter<T> private constructor(
                 array[i] = byteBuffer.int
             }
 
+            logger.log("Deserializing BloomFilter with m = $m, k = $k, seed = $seed")
             return BloomFilter(m, k, BitArray(m, array), seed, hashFunction)
         }
     }
@@ -170,6 +186,7 @@ class BloomFilter<T> private constructor(
      * Serialize the BloomFilter to a byte array
      */
     fun serialize(): ByteArray {
+        logger.log("Serializing BloomFilter with m = $bitSetSize, k = $numHashFunctions, seed = $seed")
         // 4 bytes for bitSetSize, 4 bytes for numHashFunctions, 4 bytes for seed => 12 bytes
         // number_of_ints_in_bitArray = m/32 cause each int in bitArray stores 32 bits
         // size of each element in bitArray = 4 * number_of_ints_in_bitArray
@@ -182,6 +199,7 @@ class BloomFilter<T> private constructor(
         for (word in bitArray.array) {
             byteBuffer.putInt(word)
         }
+        logger.log("Serialization complete")
         return byteBuffer.array()
     }
 
@@ -189,7 +207,9 @@ class BloomFilter<T> private constructor(
      * Delete all elements in the BloomFilter
      */
     fun clear() {
+        logger.log("Clearing BloomFilter")
         bitArray.clear()
+        logger.log("BloomFilter cleared")
     }
 
     /**
