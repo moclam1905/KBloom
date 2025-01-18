@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("maven-publish")
+    id("kotlinx-serialization")
 }
 
 
@@ -61,4 +62,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Kotlinx serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    // MessagePack serialization
+    implementation(libs.jackson.dataformat.msgpack)
+    // Module that adds support for serialization/deserialization of Kotlin
+    implementation(libs.jackson.module.kotlin)
 }

@@ -124,4 +124,89 @@ class BloomFilterTest {
 
         assertFalse("BloomFilter should not contain 'kiwi'", bf.mightContain("kiwi"))
     }
+
+    @Test
+    fun testSerializeDeserializeJson() {
+        val mockLogger = MockLogger()
+        val bf = BloomFilter.create<String>(
+            expectedInsertions = 1000,
+            fpp = 0.01,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = mockLogger
+        )
+
+        bf.put("apple")
+        bf.put("banana")
+
+        val serializedJson = bf.serialize(SerializationFormat.JSON)
+        val bfDeserialized = BloomFilter.deserialize<String>(
+            byteArray = serializedJson,
+            format = SerializationFormat.JSON,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = mockLogger
+        )
+
+        assertTrue(bfDeserialized.mightContain("apple"))
+        assertTrue(bfDeserialized.mightContain("banana"))
+        assertFalse(bfDeserialized.mightContain("cherry"))
+
+        mockLogger.clear()
+
+    }
+
+    @Test
+    fun testSerializeDeserializeMessagePack() {
+        val mockLogger = ConsoleLogger()
+
+        val bf = BloomFilter.create<String>(
+            expectedInsertions = 1000,
+            fpp = 0.01,
+            seed = 2020,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = mockLogger
+        )
+
+        bf.put("date")
+        bf.put("elderberry")
+
+        val serializedMessagePack = bf.serialize(SerializationFormat.MESSAGEPACK)
+        val bfDeserialized = BloomFilter.deserialize<String>(
+            byteArray = serializedMessagePack,
+            format = SerializationFormat.MESSAGEPACK,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = ConsoleLogger()
+        )
+
+        assertTrue(bfDeserialized.mightContain("date"))
+        assertTrue(bfDeserialized.mightContain("elderberry"))
+        assertFalse(bfDeserialized.mightContain("fig"))
+    }
+
+    @Test
+    fun testSerializeDeserializeByteArray() {
+        val mockLogger = MockLogger()
+
+        val bf = BloomFilter.create<String>(
+            expectedInsertions = 1000,
+            fpp = 0.01,
+            seed = 3030,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = mockLogger
+        )
+
+        bf.put("grape")
+        bf.put("honeydew")
+
+        val serializedByteArray = bf.serialize(SerializationFormat.BYTE_ARRAY)
+        val bfDeserialized = BloomFilter.deserialize<String>(
+            byteArray = serializedByteArray,
+            format = SerializationFormat.BYTE_ARRAY,
+            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            logger = mockLogger
+        )
+
+        assertTrue(bfDeserialized.mightContain("grape"))
+        assertTrue(bfDeserialized.mightContain("honeydew"))
+        assertFalse(bfDeserialized.mightContain("kiwi"))
+    }
 }
