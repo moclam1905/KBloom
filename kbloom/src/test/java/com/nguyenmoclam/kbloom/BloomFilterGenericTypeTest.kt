@@ -1,24 +1,22 @@
 package com.nguyenmoclam.kbloom
 
+import com.nguyenmoclam.kbloom.configuration.BloomFilterBuilder
+import com.nguyenmoclam.kbloom.core.BloomFilter
+import com.nguyenmoclam.kbloom.hashing.MurmurHash3
+import com.nguyenmoclam.kbloom.serialization.SerializationFormat
 import org.junit.Test
 import java.nio.ByteBuffer
 
 class BloomFilterGenericTypeTest {
     @Test
     fun testBFIntType() {
-        val bfInt = BloomFilter.create<Int>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { it.toString().toByteArray(Charsets.UTF_8) }
-        )
-
-        // Int to ByteArray by ByteBuffer can make better performance
-        val bfIntPerformance = BloomFilter.create<Int>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { ByteBuffer.allocate(4).putInt(it).array() }
-        )
-
+        val bfInt = BloomFilterBuilder<Int>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { ByteBuffer.allocate(4).putInt(it).array() }
+            .build()
 
         bfInt.put(42)
         bfInt.put(100)
@@ -26,29 +24,34 @@ class BloomFilterGenericTypeTest {
         println(bfInt.mightContain(42))    // true
         println(bfInt.mightContain(7))     // false (might be false positive with fpp = 0.01))
 
+        val serialized = bfInt.serialize()
+
+        val restored = BloomFilter.deserialize<Int>(
+            byteArray = serialized,
+            format = SerializationFormat.BYTE_ARRAY,
+            hashFunction = MurmurHash3,
+            toBytes = { ByteBuffer.allocate(4).putInt(it).array() }
+        )
+
+        println(restored.mightContain(42)) // true
+
+
     }
 
     data class User(val id: Int, val name: String)
 
     @Test
     fun testBfWithDataClass() {
-
-        val bfUser = BloomFilter.create<User>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = {
-                "${it.id}|${it.name}".toByteArray(Charsets.UTF_8)
-            }
-        )
-
-        val bfUserPerformance = BloomFilter.create<User>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = {
+        val bfUser = BloomFilterBuilder<User>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes {
                 ByteBuffer.allocate(8).putInt(it.id).put(it.name.toByteArray(Charsets.UTF_8))
                     .array()
             }
-        )
+            .build()
 
         val user1 = User(1, "NML")
         val user2 = User(2, "YMY")
@@ -64,10 +67,12 @@ class BloomFilterGenericTypeTest {
 
     @Test
     fun testBfWithList() {
-        val bfList = BloomFilter.create<List<Int>>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { list ->
+        val bfList = BloomFilterBuilder<List<Int>>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { list ->
                 // List<Int> to ByteArray by connect all Ints together
                 val byteBuffer = ByteBuffer.allocate(4 * list.size)
                 list.forEach {
@@ -75,7 +80,7 @@ class BloomFilterGenericTypeTest {
                 }
                 byteBuffer.array()
             }
-        )
+            .build()
 
         val list1 = listOf(1, 2, 3)
         val list2 = listOf(4, 5, 6)
@@ -89,10 +94,12 @@ class BloomFilterGenericTypeTest {
 
     @Test
     fun testBfWithMap() {
-        val bfMap = BloomFilter.create<Map<String, Any>>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { map ->
+        val bfMap = BloomFilterBuilder<Map<String, Any>>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { map ->
                 val sortedKeys = map.keys.sorted()
                 val stringBuilder = StringBuilder()
                 sortedKeys.forEach { key ->
@@ -100,7 +107,7 @@ class BloomFilterGenericTypeTest {
                 }
                 stringBuilder.toString().toByteArray(Charsets.UTF_8)
             }
-        )
+            .build()
 
         val map1 = mapOf("id" to 1, "name" to "A")
         val map2 = mapOf("id" to 2, "name" to "B")

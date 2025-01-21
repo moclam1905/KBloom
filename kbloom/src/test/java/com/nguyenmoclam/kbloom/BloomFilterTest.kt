@@ -1,5 +1,11 @@
 package com.nguyenmoclam.kbloom
 
+import com.nguyenmoclam.kbloom.configuration.BloomFilterBuilder
+import com.nguyenmoclam.kbloom.core.BloomFilter
+import com.nguyenmoclam.kbloom.core.stratery.HashFunctionStrategy
+import com.nguyenmoclam.kbloom.hashing.MurmurHash3
+import com.nguyenmoclam.kbloom.logging.ConsoleLogger
+import com.nguyenmoclam.kbloom.serialization.SerializationFormat
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -8,17 +14,13 @@ class BloomFilterTest {
 
     @Test
     fun testBloomFilterBasic() {
-        val expectedInsertions = 1000
-        val fpp = 0.01 // false positive probability (1%)
-        val seed = 1234
-
-        // Create a BloomFilter with expectedInsertions, fpp, and seed
-        val bf = BloomFilter.create<String>(
-            expectedInsertions,
-            fpp,
-            seed,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) })
-
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .build()
 
         // Insert some elements
         val insertedElements =
@@ -32,9 +34,11 @@ class BloomFilterTest {
 
         // Deserialize the BloomFilter
         val bfDeserialized = BloomFilter.deserialize<String>(
-            serialized,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) })
-
+            byteArray = serialized,
+            format = SerializationFormat.BYTE_ARRAY,
+            hashFunction = MurmurHash3,
+            toBytes = { it.toByteArray(Charsets.UTF_8) }
+        )
 
         // Check if the inserted elements are in the BloomFilter
         insertedElements.forEach { element ->
@@ -60,10 +64,14 @@ class BloomFilterTest {
     fun testBloomFilterFalsePositiveRate() {
         val expectedInsertions = 1000
         val fpp = 0.01
-        val bf = BloomFilter.create<String>(
-            expectedInsertions,
-            fpp,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) })
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .build()
+
         for (i in 0 until expectedInsertions) {
             bf.put("element_$i")
         }
@@ -88,13 +96,15 @@ class BloomFilterTest {
     fun testBFWithCustomK() {
         // use custom k
         val customK = 11
-
-        val bf = BloomFilter.create<String>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            numHashFunctions = customK
-        )
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .strategy(HashFunctionStrategy.CUSTOM)
+            .numHashFunctions(customK)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .build()
 
 
         bf.put("apple")
@@ -110,11 +120,13 @@ class BloomFilterTest {
 
     @Test
     fun testBFWithBulkElements() {
-        val bf = BloomFilter.create<String>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) }
-        )
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .build()
 
         val elements = listOf("apple", "banana", "cherry", "date", "elderberry", "fig", "grape")
         bf.putAll(elements)
@@ -128,12 +140,14 @@ class BloomFilterTest {
     @Test
     fun testSerializeDeserializeJson() {
         val mockLogger = MockLogger()
-        val bf = BloomFilter.create<String>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            logger = mockLogger
-        )
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(42)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .logger(mockLogger)
+            .build()
 
         bf.put("apple")
         bf.put("banana")
@@ -142,8 +156,8 @@ class BloomFilterTest {
         val bfDeserialized = BloomFilter.deserialize<String>(
             byteArray = serializedJson,
             format = SerializationFormat.JSON,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            logger = mockLogger
+            hashFunction = MurmurHash3,
+            toBytes = { it.toByteArray(Charsets.UTF_8) }
         )
 
         assertTrue(bfDeserialized.mightContain("apple"))
@@ -157,14 +171,14 @@ class BloomFilterTest {
     @Test
     fun testSerializeDeserializeMessagePack() {
         val mockLogger = ConsoleLogger()
-
-        val bf = BloomFilter.create<String>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            seed = 2020,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            logger = mockLogger
-        )
+        val bf = BloomFilterBuilder<String>()
+            .expectedInsertions(1000)
+            .falsePositiveProbability(0.01)
+            .seed(1905)
+            .hashFunction(MurmurHash3)
+            .toBytes { it.toByteArray(Charsets.UTF_8) }
+            .logger(mockLogger)
+            .build()
 
         bf.put("date")
         bf.put("elderberry")
@@ -173,40 +187,13 @@ class BloomFilterTest {
         val bfDeserialized = BloomFilter.deserialize<String>(
             byteArray = serializedMessagePack,
             format = SerializationFormat.MESSAGEPACK,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            hashFunction = MurmurHash3,
+            toBytes = { it.toByteArray(Charsets.UTF_8) },
             logger = ConsoleLogger()
         )
 
         assertTrue(bfDeserialized.mightContain("date"))
         assertTrue(bfDeserialized.mightContain("elderberry"))
         assertFalse(bfDeserialized.mightContain("fig"))
-    }
-
-    @Test
-    fun testSerializeDeserializeByteArray() {
-        val mockLogger = MockLogger()
-
-        val bf = BloomFilter.create<String>(
-            expectedInsertions = 1000,
-            fpp = 0.01,
-            seed = 3030,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            logger = mockLogger
-        )
-
-        bf.put("grape")
-        bf.put("honeydew")
-
-        val serializedByteArray = bf.serialize(SerializationFormat.BYTE_ARRAY)
-        val bfDeserialized = BloomFilter.deserialize<String>(
-            byteArray = serializedByteArray,
-            format = SerializationFormat.BYTE_ARRAY,
-            hashFunction = { it.toByteArray(Charsets.UTF_8) },
-            logger = mockLogger
-        )
-
-        assertTrue(bfDeserialized.mightContain("grape"))
-        assertTrue(bfDeserialized.mightContain("honeydew"))
-        assertFalse(bfDeserialized.mightContain("kiwi"))
     }
 }

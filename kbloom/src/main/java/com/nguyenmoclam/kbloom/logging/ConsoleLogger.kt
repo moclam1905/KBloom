@@ -1,4 +1,4 @@
-package com.nguyenmoclam.kbloom
+package com.nguyenmoclam.kbloom.logging
 
 /**
  * ConsoleLogger is a logger that prints messages to the console.

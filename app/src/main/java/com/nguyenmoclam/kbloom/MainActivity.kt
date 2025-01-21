@@ -9,6 +9,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.nguyenmoclam.kbloom.configuration.BloomFilterBuilder
+import com.nguyenmoclam.kbloom.core.BloomFilter
+import com.nguyenmoclam.kbloom.hashing.MurmurHash3
+import com.nguyenmoclam.kbloom.logging.NoOpLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -31,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private val PREFS_KEY = "BloomFilterKey"
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private val saveChannel = Channel<Unit>(Channel.CONFLATED)
-    private val consoleLogger = DefaultLogger
+    private val consoleLogger = NoOpLogger
 
     @OptIn(FlowPreview::class)
     @SuppressLint("SetTextI18n")
@@ -95,18 +99,21 @@ class MainActivity : AppCompatActivity() {
         val serialized = sharedPreferences.getString(PREFS_KEY, null)
         return if (serialized != null) {
             val byteArray = Base64.getDecoder().decode(serialized)
-            BloomFilter.deserialize<String>(
-                byteArray,
-                hashFunction = { it.toByteArray(Charsets.UTF_8) },
-                logger = consoleLogger)
-        } else {
-            BloomFilter.create<String>(
-                expectedInsertions = 1000,
-                fpp = 0.01,
-                seed = 1234,
-                hashFunction = { it.toByteArray(Charsets.UTF_8) },
+            BloomFilter.deserialize(
+                byteArray = byteArray,
+                hashFunction = MurmurHash3,
+                toBytes = { it.toByteArray(Charsets.UTF_8) },
                 logger = consoleLogger
             )
+        } else {
+            BloomFilterBuilder<String>()
+                .expectedInsertions(1000)
+                .falsePositiveProbability(0.01)
+                .seed(42)
+                .hashFunction(MurmurHash3)
+                .toBytes { it.toByteArray(Charsets.UTF_8) }
+                .logger(consoleLogger)
+                .build()
         }
     }
 
@@ -135,7 +142,10 @@ class MainActivity : AppCompatActivity() {
         val file = File(filesDir, "bloom_filter.dat")
         return if (file.exists()) {
             val serialized = file.readBytes()
-            BloomFilter.deserialize(serialized, hashFunction = { it.toByteArray(Charsets.UTF_8) })
+            BloomFilter.deserialize(
+                serialized,
+                hashFunction = MurmurHash3,
+                toBytes = { it.toByteArray(Charsets.UTF_8) })
         } else {
             null
         }

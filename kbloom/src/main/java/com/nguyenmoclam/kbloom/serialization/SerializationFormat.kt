@@ -1,4 +1,4 @@
-package com.nguyenmoclam.kbloom
+package com.nguyenmoclam.kbloom.serialization
 
 /**
  * SerializationFormat enum class to serialize/deserialize the BloomFilter

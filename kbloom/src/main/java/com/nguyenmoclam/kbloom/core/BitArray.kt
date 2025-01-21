@@ -1,4 +1,4 @@
-package com.nguyenmoclam.kbloom
+package com.nguyenmoclam.kbloom.core
 
 /**
  * A simple bit array implementation. Uses IntArray to store the bits.

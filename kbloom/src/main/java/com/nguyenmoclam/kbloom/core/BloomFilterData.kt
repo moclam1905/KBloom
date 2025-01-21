@@ -1,4 +1,4 @@
-package com.nguyenmoclam.kbloom
+package com.nguyenmoclam.kbloom.core
 
 import kotlinx.serialization.Serializable
 
