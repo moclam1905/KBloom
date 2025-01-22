@@ -1,26 +1,26 @@
 package com.nguyenmoclam.kbloom.core
 
 /**
- * A simple bit array implementation. Uses IntArray to store the bits.
+ * A simple bit array implementation. Uses LongArray to store the bits.
  */
-class BitArray(private val size: Int, val array: IntArray = IntArray((size + 31) / 32)) {
+class LongArrayBitArray(private val size: Int, val array: LongArray = LongArray((size + 63) / 64)) {
 
     /**
      * Put the bit at `index` to 1
      */
     fun set(index: Int) {
-        val wordIndex = index / 32
-        val bitPosition = index % 32
-        array[wordIndex] = array[wordIndex] or (1 shl bitPosition)
+        val wordIndex = index ushr 6 // divide by 64
+        val bitPosition = index and 63 // mod 64
+        array[wordIndex] = array[wordIndex] or (1L shl bitPosition)
     }
 
     /**
      * Check if the bit at `index` is set or not
      */
     fun get(index: Int): Boolean {
-        val wordIndex = index / 32
-        val bitPosition = index % 32
-        return (array[wordIndex] and (1 shl bitPosition)) != 0
+        val wordIndex = index ushr 6 // divide by 64
+        val bitPosition = index and 63 // mod 64
+        return (array[wordIndex] and (1L shl bitPosition)) != 0L
     }
 
     /**
@@ -28,7 +28,7 @@ class BitArray(private val size: Int, val array: IntArray = IntArray((size + 31)
      */
     fun clear() {
         for (i in array.indices) {
-            array[i] = 0
+            array[i] = 0L
         }
     }
 }

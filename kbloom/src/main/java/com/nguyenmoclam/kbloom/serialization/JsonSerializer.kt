@@ -37,7 +37,7 @@ class JsonSerializer<T> : Serializer<T> {
         logger.log("Deserializing from JSON")
         val json = data.toString(Charsets.UTF_8)
         val serialize = Json.decodeFromString<BloomFilterData>(json)
-        val array = serialize.bitArray.toIntArray()
+        val array = serialize.bitArray.toLongArray()
 
         logger.log("Deserializing from JSON complete")
         return BloomFilter.restore(

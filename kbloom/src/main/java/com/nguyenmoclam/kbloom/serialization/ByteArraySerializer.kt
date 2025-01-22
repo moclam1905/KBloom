@@ -26,7 +26,7 @@ class ByteArraySerializer<T> : Serializer<T> {
         byteBuffer.putInt(seed)
 
         for (word in bitArray) {
-            byteBuffer.putInt(word)
+            byteBuffer.putLong(word)
         }
         logger.log("Serialization to byte array complete")
         return byteBuffer.array()
@@ -56,9 +56,9 @@ class ByteArraySerializer<T> : Serializer<T> {
             throw DeserializationException("Data size mismatch: expected ${12 + numInts * 4} bytes, but got ${data.size} bytes")
         }
 
-        val array = IntArray(numInts)
+        val array = LongArray(numInts)
         for (i in 0 until numInts) {
-            array[i] = byteBuffer.int
+            array[i] = byteBuffer.long
         }
 
         logger.log("Deserializing from ByteArray complete")

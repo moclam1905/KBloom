@@ -43,7 +43,7 @@ class MessagePackSerializer<T> : Serializer<T> {
             registerKotlinModule()
         }
         val serialize: BloomFilterData = mapper.readValue(data)
-        val array = serialize.bitArray.toIntArray()
+        val array = serialize.bitArray.toLongArray()
 
         logger.log("Deserializing from MessagePack complete")
         return BloomFilter.restore(

@@ -21,7 +21,7 @@ import com.nguyenmoclam.kbloom.utils.OptimalCalculations
 class BloomFilter<T> private constructor(
     private val bitSetSize: Int,
     private val numHashFunctions: Int,
-    private val bitArray: BitArray,
+    private val bitArray: LongArrayBitArray,
     private val seed: Int,
     private val hashFunction: HashFunction,
     private val toBytes: (T) -> ByteArray,
@@ -142,7 +142,7 @@ class BloomFilter<T> private constructor(
             return BloomFilter(
                 bitSetSize = m,
                 numHashFunctions = k,
-                bitArray = BitArray(m),
+                bitArray = LongArrayBitArray(m),
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
@@ -157,7 +157,7 @@ class BloomFilter<T> private constructor(
         fun <T> restore(
             bitSetSize: Int,
             numHashFunctions: Int,
-            bitArray: IntArray,
+            bitArray: LongArray,
             seed: Int,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
@@ -167,7 +167,7 @@ class BloomFilter<T> private constructor(
             return BloomFilter(
                 bitSetSize = bitSetSize,
                 numHashFunctions = numHashFunctions,
-                bitArray = BitArray(bitSetSize, bitArray),
+                bitArray = LongArrayBitArray(bitSetSize, bitArray),
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
@@ -238,7 +238,7 @@ class BloomFilter<T> private constructor(
     /**
      * Get bit array
      */
-    fun getBitArray(): IntArray = bitArray.array.copyOf()
+    fun getBitArray(): LongArray = bitArray.array.copyOf()
 
     /**
      * * Get logger
