@@ -9,6 +9,9 @@ import com.nguyenmoclam.kbloom.serialization.SerializationFormat
 import com.nguyenmoclam.kbloom.serialization.Serializer
 import com.nguyenmoclam.kbloom.serialization.SerializerFactory
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations
+import kotlin.math.exp
+import kotlin.math.ln
+import kotlin.math.pow
 
 
 /**
@@ -17,6 +20,7 @@ import com.nguyenmoclam.kbloom.utils.OptimalCalculations
  * - seed: seed value to mix into the hash function
  * - support serialization/deserialization
  * - logger to log messages
+ * Reference: https://en.wikipedia.org/wiki/Bloom_filter#
  */
 class BloomFilter<T> private constructor(
     private val bitSetSize: Int,
@@ -244,5 +248,39 @@ class BloomFilter<T> private constructor(
      * * Get logger
      */
     fun getLogger(): Logger = logger
+
+    /**
+     * Estimate the current number of elements (n) in the BloomFilter
+     * n ≈ -m/k * ln(1 - x/m)
+     * x is the number of set bits in the bit array (bit = 1)
+     */
+    fun estimateCurrentNumberOfElements(): Double {
+        val setBits = bitArray.countSetBits()
+        if (bitSetSize == 0 || numHashFunctions == 0) return 0.0
+        val fraction = setBits.toDouble() / bitSetSize.toDouble()
+        if (fraction >= 1.0) {
+            // All bits are set => Bloom Filter is full => n is infinite
+            return Double.POSITIVE_INFINITY
+        }
+
+        return -(bitSetSize.toDouble() / numHashFunctions.toDouble()) * ln(1.0 - fraction)
+    }
+
+    /**
+     * Estimate the false positive rate (fpp) of the BloomFilter
+     * p ≈ (1 - e^(-kn/m))^k
+     * n is the number of elements in the BloomFilter
+     * n ≈ -m/k * ln(1 - x/m)
+     */
+    fun estimateFalsePositiveRate(): Double {
+        val n = estimateCurrentNumberOfElements()
+
+        if (n <= 0.0 || bitSetSize == 0 || numHashFunctions == 0) return 0.0
+
+        // p ≈ (1 - e^(-kn/m))^k
+        val exponent = -(numHashFunctions * n) / bitSetSize.toDouble()
+        val p = (1 - exp(exponent)).pow(numHashFunctions)
+        return p
+    }
 
 }

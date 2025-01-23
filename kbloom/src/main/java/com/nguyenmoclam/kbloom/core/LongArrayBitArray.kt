@@ -31,6 +31,17 @@ class LongArrayBitArray(private val size: Int, val array: LongArray = LongArray(
             array[i] = 0L
         }
     }
+
+    /**
+     * Count the number of set bits
+     */
+    fun countSetBits(): Int {
+        var count = 0
+        for (i in array.indices) {
+            count += java.lang.Long.bitCount(array[i])
+        }
+        return count
+    }
 }
 
 /**
