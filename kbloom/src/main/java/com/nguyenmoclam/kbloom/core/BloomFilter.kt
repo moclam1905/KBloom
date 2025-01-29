@@ -29,6 +29,7 @@ class BloomFilter<T> private constructor(
     private val seed: Int,
     private val hashFunction: HashFunction,
     private val toBytes: (T) -> ByteArray,
+    private val fpp: Double,
     private val logger: Logger = NoOpLogger
 ) {
 
@@ -150,6 +151,38 @@ class BloomFilter<T> private constructor(
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
+                fpp = fpp,
+                logger = logger
+            )
+        }
+
+        /**
+         * Create a BloomFilter with size bitSetSize and numHashFunctions has been calculated, useful for ScalableBloomFilter
+         */
+        fun <T> createWithFixedSize(
+            bitSetSize: Int,
+            fpp: Double = 0.01,
+            seed: Int,
+            numHashFunctions: Int,
+            toBytes: (T) -> ByteArray,
+            hashFunction: HashFunction,
+            logger: Logger = NoOpLogger
+        ): BloomFilter<T> {
+            if (bitSetSize <= 0) {
+                throw InvalidConfigurationException("expectedInsertions must be > 0")
+            }
+            if (fpp <= 0.0 || fpp >= 1.0) {
+                throw InvalidConfigurationException("fpp must be in (0,1)")
+            }
+            logger.log("Creating with fixed size for BloomFilter: m = $bitSetSize, k = $numHashFunctions, seed = $seed")
+            return BloomFilter(
+                bitSetSize = bitSetSize,
+                numHashFunctions = numHashFunctions,
+                bitArray = LongArrayBitArray(bitSetSize),
+                seed = seed,
+                hashFunction = hashFunction,
+                toBytes = toBytes,
+                fpp = fpp,
                 logger = logger
             )
         }
@@ -165,6 +198,7 @@ class BloomFilter<T> private constructor(
             seed: Int,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
+            fpp: Double,
             logger: Logger = NoOpLogger
         ): BloomFilter<T> {
             logger.log("Restoring BloomFilter with m = $bitSetSize, k = $numHashFunctions, seed = $seed")
@@ -175,6 +209,7 @@ class BloomFilter<T> private constructor(
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
+                fpp = fpp,
                 logger = logger
             )
         }
@@ -243,6 +278,11 @@ class BloomFilter<T> private constructor(
      * Get bit array
      */
     fun getBitArray(): LongArray = bitArray.array.copyOf()
+
+    /**
+     * Get false positive probability (fpp)
+     */
+    fun getFpp(): Double = fpp
 
     /**
      * * Get logger

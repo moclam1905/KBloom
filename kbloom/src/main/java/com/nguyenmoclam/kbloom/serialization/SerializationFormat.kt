@@ -6,6 +6,8 @@ package com.nguyenmoclam.kbloom.serialization
 enum class SerializationFormat {
     BYTE_ARRAY,
     JSON,
-    MESSAGEPACK
-    // maybe support more serialization format in future
+    MESSAGEPACK,
+    SCALABLE_BYTE_ARRAY,
+    SCALABLE_JSON,
+    SCALABLE_MESSAGEPACK
 }

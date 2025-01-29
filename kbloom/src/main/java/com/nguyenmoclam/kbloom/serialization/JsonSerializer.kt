@@ -14,6 +14,7 @@ class JsonSerializer<T> : Serializer<T> {
         val bitSetSize = bloomFilter.getBitSetSize()
         val numHashFunctions = bloomFilter.getNumHashFunctions()
         val seed = bloomFilter.getSeed()
+        val fpp = bloomFilter.getFpp()
 
         logger.log("Serializing to JSON")
 
@@ -21,6 +22,7 @@ class JsonSerializer<T> : Serializer<T> {
             bitSetSize = bitSetSize,
             numHashFunctions = numHashFunctions,
             seed = seed,
+            fpp = fpp,
             bitArray = bitArray.toList()
         )
         val json = Json.encodeToString(serializedData)
@@ -38,6 +40,7 @@ class JsonSerializer<T> : Serializer<T> {
         val json = data.toString(Charsets.UTF_8)
         val serialize = Json.decodeFromString<BloomFilterData>(json)
         val array = serialize.bitArray.toLongArray()
+        val fpp = serialize.fpp
 
         logger.log("Deserializing from JSON complete")
         return BloomFilter.restore(
@@ -47,6 +50,7 @@ class JsonSerializer<T> : Serializer<T> {
             seed = serialize.seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
+            fpp = fpp,
             logger = logger
         )
     }

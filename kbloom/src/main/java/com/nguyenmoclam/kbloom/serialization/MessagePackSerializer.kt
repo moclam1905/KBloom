@@ -15,6 +15,7 @@ class MessagePackSerializer<T> : Serializer<T> {
         val bitSetSize = bloomFilter.getBitSetSize()
         val numHashFunctions = bloomFilter.getNumHashFunctions()
         val seed = bloomFilter.getSeed()
+        val fpp = bloomFilter.getFpp()
 
         logger.log("Serializing to MessagePack")
         val mapper = MessagePackMapper()
@@ -23,6 +24,7 @@ class MessagePackSerializer<T> : Serializer<T> {
             bitSetSize = bitSetSize,
             numHashFunctions = numHashFunctions,
             seed = seed,
+            fpp = fpp,
             bitArray = bitArray.toList()
         )
         val bytes = mapper.writeValueAsBytes(serializedData)
@@ -44,6 +46,7 @@ class MessagePackSerializer<T> : Serializer<T> {
         }
         val serialize: BloomFilterData = mapper.readValue(data)
         val array = serialize.bitArray.toLongArray()
+        val fpp = serialize.fpp
 
         logger.log("Deserializing from MessagePack complete")
         return BloomFilter.restore(
@@ -53,6 +56,7 @@ class MessagePackSerializer<T> : Serializer<T> {
             seed = serialize.seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
+            fpp = fpp,
             logger = logger
         )
     }

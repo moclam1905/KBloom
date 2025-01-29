@@ -2,6 +2,7 @@ package com.nguyenmoclam.kbloom.utils
 
 import kotlin.math.ceil
 import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
@@ -26,9 +27,11 @@ object OptimalCalculations {
      */
 
     fun optimalBitSetSize(expectedInsertions: Int, fpp: Double): Int {
-        val numerator = -expectedInsertions * ln(fpp)
-        val denominator = ln(2.0) * ln(2.0)
-        return ceil(numerator / denominator).toInt()
+        return ceil(-(expectedInsertions * ln(fpp)) / (ln(2.0).pow(2))).toInt()
 
     }
+
+    //        val numerator = -expectedInsertions * ln(fpp)
+//        val denominator = ln(2.0) * ln(2.0)
+//        return ceil(numerator / denominator).toInt()
 }

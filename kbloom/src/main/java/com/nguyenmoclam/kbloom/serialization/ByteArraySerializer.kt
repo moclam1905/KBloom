@@ -13,17 +13,19 @@ class ByteArraySerializer<T> : Serializer<T> {
         val bitSetSize = bloomFilter.getBitSetSize()
         val numHashFunctions = bloomFilter.getNumHashFunctions()
         val seed = bloomFilter.getSeed()
+        val fpp = bloomFilter.getFpp()
 
         logger.log("Serializing to byte array")
-        // 4 bytes for bitSetSize, 4 bytes for numHashFunctions, 4 bytes for seed => 12 bytes
-        // number_of_ints_in_bitArray = m/32 cause each int in bitArray stores 32 bits
-        // size of each element in bitArray = 4 * number_of_ints_in_bitArray
-        val numInts = (bitSetSize + 31) / 32
-        val byteBuffer = ByteBuffer.allocate(12 + numInts * 4)
+        // 4 bytes for bitSetSize, 4 bytes for numHashFunctions, 4 bytes for seed, 8 bytes for fpp => 20 bytes
+        // number_of_longs_in_bitArray = m/64 cause each long in bitArray stores 64 bits
+        // size of each element in bitArray = 4 * number_of_longs_in_bitArray
+        val numLongs = (bitSetSize + 63) / 64
+        val byteBuffer = ByteBuffer.allocate(20 + numLongs * 8)
 
         byteBuffer.putInt(bitSetSize)
         byteBuffer.putInt(numHashFunctions)
         byteBuffer.putInt(seed)
+        byteBuffer.putDouble(fpp)
 
         for (word in bitArray) {
             byteBuffer.putLong(word)
@@ -38,8 +40,7 @@ class ByteArraySerializer<T> : Serializer<T> {
         logger: Logger,
         toBytes: (T) -> ByteArray
     ): BloomFilter<T> {
-        //require(data.size >= 12) { "byteArray must have at least 12 bytes" }
-        if (data.size < 12) {
+        if (data.size < 20) {
             throw DeserializationException("Data too small to contain Bloom Filter header")
         }
 
@@ -47,17 +48,17 @@ class ByteArraySerializer<T> : Serializer<T> {
         val m = byteBuffer.int
         val k = byteBuffer.int
         val seed = byteBuffer.int
+        val fpp = byteBuffer.double
 
         // purpose of this calculation is to get the number of ints in the bitArray
-        // each int in bitArray stores 32 bits -> (m + 31) / 32
-        val numInts = (m + 31) / 32
-        //require(data.size == 12 + (numInts * 4)) { "byteArray size is not correct" }
-        if (data.size != 12 + numInts * 4) {
-            throw DeserializationException("Data size mismatch: expected ${12 + numInts * 4} bytes, but got ${data.size} bytes")
+        // each long in bitArray stores 64 bits -> (m + 63) / 64
+        val numLongs = (m + 63) / 64
+        if (data.size != 20 + numLongs * 8) {
+            throw DeserializationException("Data size mismatch: expected ${20 + numLongs * 8} bytes, but got ${data.size} bytes")
         }
 
-        val array = LongArray(numInts)
-        for (i in 0 until numInts) {
+        val array = LongArray(numLongs)
+        for (i in 0 until numLongs) {
             array[i] = byteBuffer.long
         }
 
@@ -70,6 +71,7 @@ class ByteArraySerializer<T> : Serializer<T> {
             seed = seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
+            fpp = fpp,
             logger = logger
         )
     }
