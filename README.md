@@ -19,32 +19,35 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 
 ## Features
 
-### Current Features
+### Main Features
 
-- **Create Bloom Filter**:
-  - Initialize with `expectedInsertions` and `falsePositiveProbability`.
-- **Add Elements**:
-  - Add elements to the Bloom Filter using `put`.
-- **Check Elements**:
-  - Check if an element might be in the set using `mightContain`.
-- **MurmurHash3 Integration**:
-  - Uses efficient MurmurHash3 for hashing.
-- **Bit Array Management**:
-  - Efficiently manages bits using `BitArray`.
-- **Customizable Number of Hash Functions (`k`)**:
-  - Define the number of hash functions or let the library calculate it automatically.
-- **Bulk Operations**:
-  - Add or check multiple elements at once with `putAll` and `mightContainAll`.
-- **Clear Method**:
-  - Reset the Bloom Filter to reuse it without creating a new instance.
-- **Size and Capacity Methods**:
-  - Retrieve the Bloom Filter's size (`m`), number of hash functions (`k`), and seed value.
-- **Enhanced Error Handling**:
-  - Improved validation and clear error messages to prevent misuse.
-
+- **Core Bloom Filter**:
+  - Basic insert(`put`, `putAll`) and membership check(`mightCotain`, `mightContainAll`)
+  - Uses `hashFuction: HashFuction` and a lambda ` toBytes: (T) -> ByteArray` to manage any data type `T`
+  - Provides a private constructor plus methods `create(...)` and `restore(...)`
+- **Modular Architecture**:
+  - `hahsing` module: Different hash functions(MurmurHash3,..)
+  - `loggin` module: Pluggable loggers (`ConsoleLogger`, `NoOpLogger`)
+  - `serialization` module: Serialize/deserialize to formats (`ByteArraySerializer`, `JsonSerializer`, `MessagePackSerializer`)
+  - `configuation` module: Includes a builder pattern for flexiable Bloom Filter setup
+- **Builder Pattern**:
+  - `BloomFilterBuilder` allows setting `expectedInsertions`, `fpp`, `seed`, custom `hashFunctio`, or `toBytes`
+  - Support stategies: **OPTIMAL** (automatic `k` calculation) or **CUSTOM** (manual `expectedInsertions`)
+- **Error Handling**:
+  - Custom exceptions (`InvalidConfigurationException`, `InvalidConfigurationException`) for invalid settings or bad serialized data
+- **Performance Enhancements**:
+  - Option to use a `LongArrayBitArray` instead of `IntArray` for higher efficiency
+  - Potential concurrency measures if needed
+- **Additional Features**:
+  - **Estimate Current Number of Elements** : Uses bit-count to approximate how many items the Bloom Filter already contains
+  - **Probability Estimation** : Calculates a current false positive rate based on how many bit are set
+- **Integration and Utils **:
+  - `integration` module: Placeholders or adapters for frameworks(future feature)
+  - `utils` for helper extension
 
 ### Future Features
 
+- **Scalable Bloom Filter implementation**
 - **Counting Bloom Filter**:
   - Allow removal of elements.
 - **Kotlin Multiplatform**:
@@ -73,7 +76,7 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 
     ```groovy
     dependencies {
-       implementation 'com.github.moclam1905:KBloom:1.1'
+       implementation 'com.github.moclam1905:KBloom:1.2.1'
     }
     ```
 
@@ -82,31 +85,18 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 ### Creating a Bloom Filter
 
 ```kotlin
+val mockLogger = MockLogger() // for testing
+val bf = BloomFilterBuilder<String>()
+    .expectedInsertions(1000)
+    .falsePositiveProbability(0.01)
+    .seed(42)
+    .hashFunction(MurmurHash3)
+    .toBytes { it.toByteArray(Charsets.UTF_8) }
+    .logger(mockLogger)
+    .build()
 
-fun exampleUsage() {
-    // Define a hash function for your data type
-    val stringHashFunction: (String) -> ByteArray = { it.toByteArray(Charsets.UTF_8) }
-
-    // Create a Bloom Filter with default number of hash functions
-    val bloomFilter = BloomFilter.create<String>(
-        expectedInsertions = 1000,
-        fpp = 0.01,
-        seed = 1234,
-        hashFunction = stringHashFunction
-    )
-
-    // Or create a Bloom Filter with a custom number of hash functions
-    val customK = 7
-    val bloomFilterCustomK = BloomFilter.create<String>(
-        expectedInsertions = 1000,
-        fpp = 0.01,
-        seed = 1234,
-        hashFunction = stringHashFunction,
-        numHashFunctions = customK
-    )
-}
 ```
-Note: See more about exaple `hashFunction` in BloomFilterGenericTypeTest.kt
+Note: See more about exaple `toBytes` in BloomFilterGenericTypeTest.kt
 
 ### Adding Elements
 ```kotlin
@@ -134,35 +124,63 @@ val allContain = bloomFilter.mightContainAll(checkFruits) // true if all are pre
 
 ### Serialize and Deserialize
 ```kotlin
-// Serialize the BF to ByteArray
-val serialized = bloomFilter.serialize()
-
-// Deserialize the BF from ByteArray
-val deserializedBloomFilter = BloomFilter.deserialize<String>(
-    byteArray = serialized,
-    hashFunction = stringHashFunction
+val serializedJson = bf.serialize(SerializationFormat.JSON)
+val bfDeserialized = BloomFilter.deserialize<String>(
+    byteArray = serializedJson,
+    format = SerializationFormat.JSON,
+    hashFunction = MurmurHash3,
+    toBytes = { it.toByteArray(Charsets.UTF_8) }
 )
-
 ```
-
-### Clearing the Bloom Filter
+### SerializationFormat 
 ```kotlin
-// Clear all elements from the Bloom Filter
-bloomFilter.clear()
-
+enum class SerializationFormat {
+    BYTE_ARRAY,
+    JSON,
+    MESSAGEPACK
+    // maybe support more serialization format in future
+}
 ```
-
-## Getting Size and Capacity
+### Additional Features
+-`testEstimateCurrentNumberOfElements`
 ```kotlin
-val bitSetSize = bloomFilter.getBitSetSize()         // Size of the bit array (m)
-val numHashFunctions = bloomFilter.getNumHashFunctions() // Number of hash functions (k)
-val seed = bloomFilter.getSeed()                     // Seed value 
+val elementsToAdd = listOf("apple", "banana", "cherry", "date", "elderberry")
+elementsToAdd.forEach { bloomFilter.put(it) }
 
+val estimatedElements = bloomFilter.estimateCurrentNumberOfElements()
+
+// n ≈ -(m/k) * ln(1 - x/m)
+val actualElements = elementsToAdd.size
+// allowed tolerance is 2 elements
+val tolerance = 2.0
+// Check the difference between estimated and actual elements
+assertTrue(
+    "Estimated elements ($estimatedElements) should be within $tolerance of actual elements ($actualElements)",
+    kotlin.math.abs(estimatedElements - actualElements) <= tolerance
+)
 ```
 
+- `testEstimateFalsePositiveRate`
+``` kotlin
+val elementsToAdd = (1..500).map { "element_$it" }
+elementsToAdd.forEach { bloomFilter.put(it) }
 
+val estimatedFpp = bloomFilter.estimateFalsePositiveRate()
+// fpp current should be close to the expected fpp
+// use n = 500
+val expectedFpp =
+    (1 - exp(-bloomFilter.getNumHashFunctions() * 500.0 / bloomFilter.getBitSetSize())).pow(
+        bloomFilter.getNumHashFunctions()
+    )
+val tolerance = 0.001 // 0.1%
 
-
+assertEquals(
+    "Estimated false positive rate ($estimatedFpp) should be approximately $expectedFpp within tolerance $tolerance",
+    expectedFpp,
+    estimatedFpp,
+    tolerance
+)
+```
 
 ## Documentation
 
