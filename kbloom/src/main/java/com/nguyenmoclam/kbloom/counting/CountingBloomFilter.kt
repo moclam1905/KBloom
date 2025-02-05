@@ -260,6 +260,25 @@ class CountingBloomFilter<T> private constructor(
         return -(bitSetSize.toDouble() / numHashFunctions.toDouble()) * ln(1.0 - fraction)
     }
 
+    fun putAll(values: Iterable<T>) {
+        logger.log("CountingBloomFilter: putAll for values: $values")
+        for (value in values) {
+            put(value)
+        }
+    }
+
+    fun mightContainAll(values: Iterable<T>): Boolean {
+        logger.log("CountingBloomFilter: mightContainAll for values: $values")
+        for (value in values) {
+            if (!mightContain(value)) {
+                logger.log("One of the values is definitely not in the CountingBloomFilter")
+                return false
+            }
+        }
+        logger.log("All values might be in the CountingBloomFilter")
+        return true
+    }
+
     private val Int.absoluteValue: Int
         get() = if (this == Int.MIN_VALUE) Int.MAX_VALUE else abs(this)
 

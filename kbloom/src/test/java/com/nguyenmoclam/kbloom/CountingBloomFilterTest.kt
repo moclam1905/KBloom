@@ -137,4 +137,79 @@ class CountingBloomFilterTest {
         assertEquals(2, cbf.count("oversize"))
         assertTrue(cbf.mightContain("oversize"))
     }
+
+    @Test
+    fun testEstimateCurrentNumberOfElements() {
+        val expectedInsertions = 1000
+        val fpp = 0.01
+        val cbf = CountingBloomFilter.createOptimal(
+            expectedInsertions = expectedInsertions,
+            fpp = fpp,
+            maxCounterValue = 255,
+            hashFunction = MurmurHash3,
+            toBytes = ::toBytes,
+            logger = NoOpLogger
+        )
+
+        // Add 800 elements
+        val nAdded = 800
+        val elements = (1..nAdded).map { "element-$it" }
+        elements.forEach { cbf.put(it) }
+
+        val estimated = cbf.estimateCurrentNumberOfElements()
+        println("Estimated elements: $estimated")
+
+        // Estimated elements should be close to actual
+        assertTrue("Estimated elements ($estimated) should be close to actual ($nAdded)",
+            estimated in (nAdded - 20.0)..(nAdded + 20.0))
+    }
+
+    @Test
+    fun testEstimateFalsePositiveRate() {
+        val expectedInsertions = 1000
+        val fpp = 0.01
+        val cbf = CountingBloomFilter.createOptimal(
+            expectedInsertions = expectedInsertions,
+            fpp = fpp,
+            maxCounterValue = 255,
+            hashFunction = MurmurHash3,
+            toBytes = ::toBytes,
+            logger = NoOpLogger
+        )
+
+        // Add 1000 elements
+        val nAdded = 1000
+        val elements = (1..nAdded).map { "item-$it" }
+        elements.forEach { cbf.put(it) }
+
+        // Check false positive rate with a test set of 10,000 elements
+        val testSize = 10_000
+        var falsePositives = 0
+        for (i in 1..testSize) {
+            val testElement = "test-item-$i"
+            if (cbf.mightContain(testElement)) {
+                falsePositives++
+            }
+        }
+
+        // False positive rate observed
+        val observedFpp = falsePositives.toDouble() / testSize
+        println("Observed FPP = $observedFpp")
+
+        // False positive rate estimated
+        val estimatedFpp = cbf.estimateFalsePositiveRate()
+        println("Estimated FPP = $estimatedFpp")
+
+        // Check if observedFpp <= 0.05
+        assertTrue(
+            "Observed FPP ($observedFpp) is too high compared to expected ~0.01",
+            observedFpp <= 0.05
+        )
+
+        // Check if estimatedFpp <= fpp
+        assertTrue(
+            "Estimated FPP ($estimatedFpp) should not exceed configured FPP ($fpp)",
+            estimatedFpp <= 0.05
+        )
+    }
 }

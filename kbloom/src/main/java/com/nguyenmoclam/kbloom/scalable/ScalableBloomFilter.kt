@@ -12,8 +12,6 @@ import com.nguyenmoclam.kbloom.serialization.SerializationFormat
 import com.nguyenmoclam.kbloom.serialization.SerializerFactory
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalBitSetSize
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalNumHashFunctions
-import kotlin.math.ceil
-import kotlin.math.ln
 
 class ScalableBloomFilter<T> private constructor(
     private val initialExpectedInsertions: Int,
@@ -94,7 +92,6 @@ class ScalableBloomFilter<T> private constructor(
     fun estimateFalsePositiveRate(): Double {
         var productOfNegatives = 1.0
         for (filter in bloomFilters) {
-            // filter.estimateFalsePositiveRate() = PF_i
             productOfNegatives *= (1.0 - filter.estimateFalsePositiveRate())
         }
         return 1.0 - productOfNegatives
@@ -139,18 +136,6 @@ class ScalableBloomFilter<T> private constructor(
         )
         bloomFilters.add(newFilter)
     }
-
-
-    //        val newBitSetSize =
-//            if (previousFilter != null) growthStrategy.calculateBitSetSize(previousFilter) else initialExpectedInsertions
-//        val newHashFunctions =
-//            if (previousFilter != null) growthStrategy.calculateNumHashFunctions(previousFilter) else calculateInitialNumHashFunctions(
-//                initialExpectedInsertions,
-//                newBitSetSize
-//            )
-//        val newFpp =
-//            if (previousFilter != null) growthStrategy.calculateFpp(previousFilter.getFpp()) else fpp
-
 
     fun getLogger(): Logger {
         return logger
@@ -260,6 +245,25 @@ class ScalableBloomFilter<T> private constructor(
 
     internal fun getBloomFilters(): List<BloomFilter<T>> {
         return bloomFilters
+    }
+
+    fun putAll(values: Iterable<T>) {
+        logger.log("ScalableBloomFilter: Adding all values")
+        for (v in values){
+            put(v)
+        }
+    }
+
+    fun mightContainAll(values: Iterable<T>): Boolean {
+        logger.log("ScalableBloomFilter: Checking if might contain all values")
+        for (v in values){
+            if (!mightContain(v)){
+                logger.log("ScalableBloomFilter: Might not contain all values")
+                return false
+            }
+        }
+        logger.log("ScalableBloomFilter: Might contain all values")
+        return true
     }
 
 }
