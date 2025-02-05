@@ -1,5 +1,9 @@
 package com.nguyenmoclam.kbloom.serialization
 
+import com.nguyenmoclam.kbloom.counting.serialization.CountingBloomFilterSerializer
+import com.nguyenmoclam.kbloom.counting.serialization.CountingByteArraySerializer
+import com.nguyenmoclam.kbloom.counting.serialization.CountingJsonSerializer
+import com.nguyenmoclam.kbloom.counting.serialization.CountingMessagePackSerializer
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableByteArraySerializer
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableJsonSerialized
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableMessagePackSerializer
@@ -23,6 +27,15 @@ object SerializerFactory {
             SerializationFormat.SCALABLE_JSON -> ScalableJsonSerialized()
             SerializationFormat.SCALABLE_MESSAGEPACK -> ScalableMessagePackSerializer()
             SerializationFormat.SCALABLE_BYTE_ARRAY -> ScalableByteArraySerializer()
+            else -> throw IllegalArgumentException("Unsupported serialization format: $format")
+        }
+    }
+
+    fun <T> getCountingSerializer(format: SerializationFormat): CountingBloomFilterSerializer<T> {
+        return when (format) {
+            SerializationFormat.COUNTING_BYTE_ARRAY -> CountingByteArraySerializer()
+            SerializationFormat.COUNTING_JSON -> CountingJsonSerializer()
+            SerializationFormat.COUNTING_MESSAGEPACK -> CountingMessagePackSerializer()
             else -> throw IllegalArgumentException("Unsupported serialization format: $format")
         }
     }

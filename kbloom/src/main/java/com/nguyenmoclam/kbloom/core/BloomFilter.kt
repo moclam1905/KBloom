@@ -15,11 +15,8 @@ import kotlin.math.pow
 
 
 /**
- * BloomFilter simple implementation (v1.0) using MurmurHash3 (32-bit)
+ * BloomFilter using MurmurHash3 (32-bit)
  * - T: type of the value to be stored in the BloomFilter
- * - seed: seed value to mix into the hash function
- * - support serialization/deserialization
- * - logger to log messages
  * Reference: https://en.wikipedia.org/wiki/Bloom_filter#
  */
 class BloomFilter<T> private constructor(

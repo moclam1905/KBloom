@@ -30,8 +30,4 @@ object OptimalCalculations {
         return ceil(-(expectedInsertions * ln(fpp)) / (ln(2.0).pow(2))).toInt()
 
     }
-
-    //        val numerator = -expectedInsertions * ln(fpp)
-//        val denominator = ln(2.0) * ln(2.0)
-//        return ceil(numerator / denominator).toInt()
 }
