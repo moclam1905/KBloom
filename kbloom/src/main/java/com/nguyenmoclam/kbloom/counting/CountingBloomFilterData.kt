@@ -8,5 +8,5 @@ data class CountingBloomFilterData(
     val numHashFunctions: Int,
     val maxCounterValue: Int,
     val seed: Int,
-    val counters: List<Int>
+    val counters: List<Int>,
 )

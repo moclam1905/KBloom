@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("maven-publish")
     id("kotlinx-serialization")
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 
@@ -51,6 +52,21 @@ afterEvaluate {
                 from(components["release"])
             }
         }
+    }
+}
+
+spotless {
+    kotlin{
+        target("src/**/*.kt")
+        ktlint().editorConfigOverride(
+            mapOf(
+                "indent_size" to "4",
+                "continuation_indent_size" to "4",
+            )
+        )
+        trimTrailingWhitespace()
+        endWithNewline()
+
     }
 }
 

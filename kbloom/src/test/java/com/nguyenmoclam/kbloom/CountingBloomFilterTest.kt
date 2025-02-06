@@ -5,9 +5,13 @@ import com.nguyenmoclam.kbloom.counting.CountingBloomFilterBuilder
 import com.nguyenmoclam.kbloom.hashing.MurmurHash3
 import com.nguyenmoclam.kbloom.logging.NoOpLogger
 import com.nguyenmoclam.kbloom.serialization.SerializationFormat
-import org.junit.Assert.*
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("MaxLineLength")
 class CountingBloomFilterTest {
 
     private fun toBytes(value: String): ByteArray = value.toByteArray(Charsets.UTF_8)
@@ -104,7 +108,7 @@ class CountingBloomFilterTest {
             data = byteData,
             format = SerializationFormat.COUNTING_BYTE_ARRAY,
             hashFunction = MurmurHash3,
-            toBytes = ::toBytes
+            toBytes = ::toBytes,
         )
 
         assertTrue(restored.mightContain("kotlin"))
@@ -115,7 +119,8 @@ class CountingBloomFilterTest {
         // Compare counters
         assertArrayEquals(
             "Counters must be identical after deserialize",
-            cbf.getCounters(), restored.getCounters()
+            cbf.getCounters(),
+            restored.getCounters(),
         )
     }
 
@@ -148,7 +153,7 @@ class CountingBloomFilterTest {
             maxCounterValue = 255,
             hashFunction = MurmurHash3,
             toBytes = ::toBytes,
-            logger = NoOpLogger
+            logger = NoOpLogger,
         )
 
         // Add 800 elements
@@ -160,8 +165,10 @@ class CountingBloomFilterTest {
         println("Estimated elements: $estimated")
 
         // Estimated elements should be close to actual
-        assertTrue("Estimated elements ($estimated) should be close to actual ($nAdded)",
-            estimated in (nAdded - 20.0)..(nAdded + 20.0))
+        assertTrue(
+            "Estimated elements ($estimated) should be close to actual ($nAdded)",
+            estimated in (nAdded - 20.0)..(nAdded + 20.0),
+        )
     }
 
     @Test
@@ -174,7 +181,7 @@ class CountingBloomFilterTest {
             maxCounterValue = 255,
             hashFunction = MurmurHash3,
             toBytes = ::toBytes,
-            logger = NoOpLogger
+            logger = NoOpLogger,
         )
 
         // Add 1000 elements
@@ -203,13 +210,13 @@ class CountingBloomFilterTest {
         // Check if observedFpp <= 0.05
         assertTrue(
             "Observed FPP ($observedFpp) is too high compared to expected ~0.01",
-            observedFpp <= 0.05
+            observedFpp <= 0.05,
         )
 
         // Check if estimatedFpp <= fpp
         assertTrue(
             "Estimated FPP ($estimatedFpp) should not exceed configured FPP ($fpp)",
-            estimatedFpp <= 0.05
+            estimatedFpp <= 0.05,
         )
     }
 }

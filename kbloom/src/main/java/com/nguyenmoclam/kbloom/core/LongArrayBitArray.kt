@@ -52,4 +52,3 @@ fun Int.absoluteIndex(bitSetSize: Int): Int {
     // Make sure it returns [0..bitSetSize)
     return if (this >= 0) this else (this and Int.MAX_VALUE) % bitSetSize
 }
-

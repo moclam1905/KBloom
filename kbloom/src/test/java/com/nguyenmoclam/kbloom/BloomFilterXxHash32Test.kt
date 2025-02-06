@@ -9,6 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("MaxLineLength")
 class BloomFilterXxHash32Test {
     private fun stringToByteArray(s: String): ByteArray {
         return s.toByteArray(Charsets.UTF_8)
@@ -47,7 +48,7 @@ class BloomFilterXxHash32Test {
 
         assertTrue(
             "Observed FPP should be less than or equal to the expected FPP",
-            observedFpp < 0.05
+            observedFpp < 0.05,
         )
 
         val bytes = bf.serialize(SerializationFormat.BYTE_ARRAY)
@@ -56,22 +57,21 @@ class BloomFilterXxHash32Test {
             format = SerializationFormat.BYTE_ARRAY,
             hashFunction = XxHash32,
             toBytes = ::stringToByteArray,
-            logger = NoOpLogger
+            logger = NoOpLogger,
         )
 
         addedElements.forEach { element ->
             assertTrue(
                 "Element $element should be in the restored filter",
-                restoredBf.mightContain(element)
+                restoredBf.mightContain(element),
             )
         }
 
         notAddedElements.forEach { element ->
             assertFalse(
                 "Element $element should not be in the restored filter",
-                restoredBf.mightContain(element)
+                restoredBf.mightContain(element),
             )
         }
-
     }
 }

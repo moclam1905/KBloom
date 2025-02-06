@@ -10,7 +10,7 @@ interface ScalableSerializer<T> {
      * @param sbf: ScalableBloomFilter to serialize
      * @return: byte array serialized
      */
-    fun serialize(sbf: ScalableBloomFilter<T>):ByteArray
+    fun serialize(sbf: ScalableBloomFilter<T>): ByteArray
 
     /**
      * Deserialize the byte array to a ScalableBloomFilter
@@ -20,9 +20,10 @@ interface ScalableSerializer<T> {
      * @param toBytes: provided by the user to convert T to ByteArray
      * @return ScalableBloomFilter<T> deserialized
      */
-    fun deserialize(data: ByteArray,
-                    hashFunction: HashFunction,
-                    logger: Logger,
-                    toBytes: (T) -> ByteArray
-    ):ScalableBloomFilter<T>
+    fun deserialize(
+        data: ByteArray,
+        hashFunction: HashFunction,
+        logger: Logger,
+        toBytes: (T) -> ByteArray,
+    ): ScalableBloomFilter<T>
 }

@@ -26,7 +26,7 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
                 numHashFunctions = bf.getNumHashFunctions(),
                 seed = bf.getSeed(),
                 fpp = bf.getFpp(),
-                bitArray = bf.getBitArray().toList()
+                bitArray = bf.getBitArray().toList(),
             )
         }
 
@@ -35,10 +35,10 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
             fpp = sbf.getFpp(),
             growthStrategy = GrowthStrategyFactory.getNameByStrategy(sbf.getGrowthStrategy()),
             seed = sbf.getSeed(),
-            bloomFilters = bfListData
+            bloomFilters = bfListData,
         )
 
-        val bytes =  mapper.writeValueAsBytes(sbfData)
+        val bytes = mapper.writeValueAsBytes(sbfData)
         logger.log("ScalableBloomFilter: Serialization to MessagePack complete")
         return bytes
     }
@@ -47,7 +47,7 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): ScalableBloomFilter<T> {
         logger.log("ScalableBloomFilter: Deserializing from MessagePack")
         try {
@@ -60,7 +60,7 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
                 seed = sbfData.seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
             sbf.clearBloomFilters()
             sbfData.bloomFilters.forEach { bfData ->
@@ -72,7 +72,7 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
                     hashFunction = hashFunction,
                     toBytes = toBytes,
                     fpp = bfData.fpp,
-                    logger = logger
+                    logger = logger,
                 )
                 sbf.addBloomFilter(bf)
             }
@@ -81,5 +81,4 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
             throw DeserializationException("Error deserializing ScalableBloomFilter from MessagePack ${e.message}")
         }
     }
-
 }

@@ -91,9 +91,9 @@ object XxHash32 : HashFunction {
     private fun getIntLE(buf: ByteArray, pos: Int): Int {
         // Kotlin/Java default big-endian => convert to little-endian
         return (buf[pos].toInt() and 0xFF) or
-                ((buf[pos + 1].toInt() and 0xFF) shl 8) or
-                ((buf[pos + 2].toInt() and 0xFF) shl 16) or
-                ((buf[pos + 3].toInt() and 0xFF) shl 24)
+            ((buf[pos + 1].toInt() and 0xFF) shl 8) or
+            ((buf[pos + 2].toInt() and 0xFF) shl 16) or
+            ((buf[pos + 3].toInt() and 0xFF) shl 24)
     }
 
     /**
@@ -133,5 +133,4 @@ object XxHash32 : HashFunction {
     private fun UInt.rotateLeft(bits: Int): UInt {
         return (this shl bits) or (this shr (32 - bits))
     }
-
 }

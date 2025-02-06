@@ -1,7 +1,7 @@
 package com.nguyenmoclam.kbloom.serialization
 
-import com.nguyenmoclam.kbloom.core.BloomFilterData
 import com.nguyenmoclam.kbloom.core.BloomFilter
+import com.nguyenmoclam.kbloom.core.BloomFilterData
 import com.nguyenmoclam.kbloom.hashing.HashFunction
 import com.nguyenmoclam.kbloom.logging.Logger
 import kotlinx.serialization.encodeToString
@@ -23,7 +23,7 @@ class JsonSerializer<T> : Serializer<T> {
             numHashFunctions = numHashFunctions,
             seed = seed,
             fpp = fpp,
-            bitArray = bitArray.toList()
+            bitArray = bitArray.toList(),
         )
         val json = Json.encodeToString(serializedData)
         logger.log("Serialization to JSON complete")
@@ -34,7 +34,7 @@ class JsonSerializer<T> : Serializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): BloomFilter<T> {
         logger.log("Deserializing from JSON")
         val json = data.toString(Charsets.UTF_8)
@@ -51,7 +51,7 @@ class JsonSerializer<T> : Serializer<T> {
             hashFunction = hashFunction,
             toBytes = toBytes,
             fpp = fpp,
-            logger = logger
+            logger = logger,
         )
     }
 }

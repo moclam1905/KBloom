@@ -13,6 +13,7 @@ import com.nguyenmoclam.kbloom.serialization.SerializerFactory
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalBitSetSize
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalNumHashFunctions
 
+@Suppress("LongParameterList")
 class ScalableBloomFilter<T> private constructor(
     private val initialExpectedInsertions: Int,
     private val fpp: Double,
@@ -20,7 +21,7 @@ class ScalableBloomFilter<T> private constructor(
     private val seed: Int,
     private val hashFunction: HashFunction,
     private val toBytes: (T) -> ByteArray,
-    private val logger: Logger = NoOpLogger
+    private val logger: Logger = NoOpLogger,
 ) {
     private val bloomFilters: MutableList<BloomFilter<T>> = mutableListOf()
 
@@ -101,7 +102,7 @@ class ScalableBloomFilter<T> private constructor(
      * Check if the ScalableBloomFilter is over capacity
      */
     private fun isOverCapacity(currentFilter: BloomFilter<T>): Boolean {
-        return currentFilter.estimateCurrentNumberOfElements() >= (initialExpectedInsertions * 0.75)
+        return currentFilter.estimateCurrentNumberOfElements() >= (initialExpectedInsertions * OVER_CAPACITY_THRESHOLD)
     }
 
     /**
@@ -132,7 +133,7 @@ class ScalableBloomFilter<T> private constructor(
             seed = seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
         bloomFilters.add(newFilter)
     }
@@ -181,6 +182,7 @@ class ScalableBloomFilter<T> private constructor(
          * @param: logger: the logger to use
          * @return: the ScalableBloomFilter
          */
+        private const val OVER_CAPACITY_THRESHOLD = 0.75
         fun <T> create(
             initialExpectedInsertions: Int,
             fpp: Double,
@@ -188,7 +190,7 @@ class ScalableBloomFilter<T> private constructor(
             seed: Int = 0,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): ScalableBloomFilter<T> {
             if (initialExpectedInsertions <= 0) {
                 throw InvalidConfigurationException("initialExpectedInsertions must be greater than 0")
@@ -207,7 +209,7 @@ class ScalableBloomFilter<T> private constructor(
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
         }
 
@@ -224,13 +226,13 @@ class ScalableBloomFilter<T> private constructor(
             format: SerializationFormat = SerializationFormat.SCALABLE_BYTE_ARRAY,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): ScalableBloomFilter<T> {
             return SerializerFactory.getScalableSerializer<T>(format).deserialize(
                 data = data,
                 hashFunction = hashFunction,
                 logger = logger,
-                toBytes = toBytes
+                toBytes = toBytes,
             )
         }
     }
@@ -249,15 +251,15 @@ class ScalableBloomFilter<T> private constructor(
 
     fun putAll(values: Iterable<T>) {
         logger.log("ScalableBloomFilter: Adding all values")
-        for (v in values){
+        for (v in values) {
             put(v)
         }
     }
 
     fun mightContainAll(values: Iterable<T>): Boolean {
         logger.log("ScalableBloomFilter: Checking if might contain all values")
-        for (v in values){
-            if (!mightContain(v)){
+        for (v in values) {
+            if (!mightContain(v)) {
                 logger.log("ScalableBloomFilter: Might not contain all values")
                 return false
             }
@@ -265,5 +267,4 @@ class ScalableBloomFilter<T> private constructor(
         logger.log("ScalableBloomFilter: Might contain all values")
         return true
     }
-
 }

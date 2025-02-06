@@ -24,7 +24,7 @@ class CountingJsonSerializer<T> : CountingBloomFilterSerializer<T> {
             numHashFunctions = numHashFunctions,
             maxCounterValue = maxCounterValue,
             seed = seed,
-            counters = counters
+            counters = counters,
         )
         val json = Json.encodeToString(data)
 
@@ -36,7 +36,7 @@ class CountingJsonSerializer<T> : CountingBloomFilterSerializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): CountingBloomFilter<T> {
         logger.log("CountingBloomFilter: Deserializing from JSON")
         val jsonString = data.toString(Charsets.UTF_8)
@@ -58,10 +58,9 @@ class CountingJsonSerializer<T> : CountingBloomFilterSerializer<T> {
             seed = deserializedData.seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
         logger.log("CountingBloomFilter: Deserialization from JSON complete")
         return cbf
-
     }
 }

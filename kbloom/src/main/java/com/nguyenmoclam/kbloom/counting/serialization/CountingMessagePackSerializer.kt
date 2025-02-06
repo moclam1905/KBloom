@@ -22,7 +22,7 @@ class CountingMessagePackSerializer<T> : CountingBloomFilterSerializer<T> {
             numHashFunctions = cbf.getNumHashFunctions(),
             maxCounterValue = cbf.getMaxCounterValue(),
             seed = cbf.getSeed(),
-            counters = cbf.getCounters().toList()
+            counters = cbf.getCounters().toList(),
         )
 
         val bytes = mapper.writeValueAsBytes(data)
@@ -34,7 +34,7 @@ class CountingMessagePackSerializer<T> : CountingBloomFilterSerializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): CountingBloomFilter<T> {
         logger.log("CountingBloomFilter: Deserializing from MessagePack")
         val deserializedData = try {
@@ -55,7 +55,7 @@ class CountingMessagePackSerializer<T> : CountingBloomFilterSerializer<T> {
             seed = deserializedData.seed,
             hashFunction = hashFunction,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
 
         logger.log("CountingBloomFilter: Deserialization from MessagePack complete")

@@ -7,5 +7,5 @@ package com.nguyenmoclam.kbloom.core.stratery
  */
 enum class HashFunctionStrategy {
     OPTIMAL,
-    CUSTOM
+    CUSTOM,
 }

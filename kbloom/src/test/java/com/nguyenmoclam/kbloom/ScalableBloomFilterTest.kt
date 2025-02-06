@@ -10,6 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("MaxLineLength")
 class ScalableBloomFilterTest {
     private fun stringToBytes(string: String): ByteArray {
         return string.toByteArray()
@@ -24,7 +25,7 @@ class ScalableBloomFilterTest {
             fpp = 0.01,
             hashFunction = hashFunction,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         val elementsToAdd = listOf("apple", "banana", "cherry", "date", "elderberry")
@@ -33,7 +34,7 @@ class ScalableBloomFilterTest {
         elementsToAdd.forEach { elements ->
             assertTrue(
                 "Element '$elements' should be contained in the SBF",
-                sbf.mightContain(elements)
+                sbf.mightContain(elements),
             )
         }
 
@@ -42,7 +43,7 @@ class ScalableBloomFilterTest {
         elementsNotAdded.forEach { elements ->
             assertFalse(
                 "Element '$elements' should not be contained in the SBF",
-                sbf.mightContain(elements)
+                sbf.mightContain(elements),
             )
         }
     }
@@ -59,7 +60,7 @@ class ScalableBloomFilterTest {
             hashFunction = hashFunction,
             growthStrategy = GeometricScalingGrowthStrategy,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         val elementsToAdd = (1..initialInsertions).map { "element_$it" }
@@ -81,9 +82,8 @@ class ScalableBloomFilterTest {
         val allowedFppUpperBound = 0.015
         assertTrue(
             "Observed FPP $observedFpp should be less than or equal to $allowedFppUpperBound",
-            observedFpp <= allowedFppUpperBound
+            observedFpp <= allowedFppUpperBound,
         )
-
     }
 
     @Test
@@ -95,7 +95,7 @@ class ScalableBloomFilterTest {
             fpp = 0.01,
             hashFunction = hashFunction,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         val elementsToAdd = listOf("apple", "banana", "cherry", "date", "elderberry")
@@ -106,14 +106,14 @@ class ScalableBloomFilterTest {
             data = serialized,
             hashFunction = hashFunction,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         // Check elements added
         elementsToAdd.forEach { elements ->
             assertTrue(
                 "Element '$elements' should be contained in the SBF",
-                deserialized.mightContain(elements)
+                deserialized.mightContain(elements),
             )
         }
 
@@ -122,7 +122,7 @@ class ScalableBloomFilterTest {
         elementsNotAdded.forEach { elements ->
             assertFalse(
                 "Element '$elements' should not be contained in the SBF",
-                deserialized.mightContain(elements)
+                deserialized.mightContain(elements),
             )
         }
     }
@@ -137,7 +137,7 @@ class ScalableBloomFilterTest {
             hashFunction = hashFunction,
             growthStrategy = DefaultGrowthStrategy,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         // Check initial BloomFilter count
@@ -154,14 +154,14 @@ class ScalableBloomFilterTest {
         elementsToAdd.forEach { elements ->
             assertTrue(
                 "Element '$elements' should be contained in the SBF after growth",
-                sbf.mightContain(elements)
+                sbf.mightContain(elements),
             )
         }
 
         // Check element not added
         assertFalse(
             "Element 'non_existent_item' should not be contained in the SBF",
-            sbf.mightContain("non_existent_item")
+            sbf.mightContain("non_existent_item"),
         )
     }
 
@@ -174,7 +174,7 @@ class ScalableBloomFilterTest {
             fpp = 0.01,
             hashFunction = hashFunction,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
 
         val elementsToAdd = listOf("one", "two", "three")
@@ -183,7 +183,7 @@ class ScalableBloomFilterTest {
         elementsToAdd.forEach { elements ->
             assertTrue(
                 "Element '$elements' should be contained in the SBF before clear",
-                sbf.mightContain(elements)
+                sbf.mightContain(elements),
             )
         }
 
@@ -194,14 +194,14 @@ class ScalableBloomFilterTest {
         elementsToAdd.forEach { elements ->
             assertFalse(
                 "Element '$elements' should not be contained in the SBF after clear",
-                sbf.mightContain(elements)
+                sbf.mightContain(elements),
             )
         }
 
         assertEquals(
             "BloomFilter count should be reset to 1 after clear",
             1,
-            sbf.getBloomFilters().size
+            sbf.getBloomFilters().size,
         )
     }
 
@@ -216,7 +216,7 @@ class ScalableBloomFilterTest {
             fpp = fpp,
             hashFunction = hashFunction,
             toBytes = ::stringToBytes,
-            logger = logger
+            logger = logger,
         )
         val elementsToAdd = (1..800).map { "element_$it" }
         elementsToAdd.forEach { sbf.put(it) }
@@ -225,15 +225,14 @@ class ScalableBloomFilterTest {
         val estimatedElements = sbf.estimateCurrentNumberOfElements()
         assertTrue(
             "Estimated elements ($estimatedElements) should be close to actual (800)",
-            estimatedElements in 700.0..900.0
+            estimatedElements in 700.0..900.0,
         )
 
         // Estimate the false positive rate
         val estimatedFpp = sbf.estimateFalsePositiveRate()
         assertTrue(
             "Estimated FPP ($estimatedFpp) should be less than or equal to configured FPP ($fpp)",
-            estimatedFpp <= fpp
+            estimatedFpp <= fpp,
         )
     }
-
 }

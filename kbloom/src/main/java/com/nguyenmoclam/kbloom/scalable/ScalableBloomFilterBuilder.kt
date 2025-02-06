@@ -38,7 +38,7 @@ class ScalableBloomFilterBuilder<T> {
             growthStrategy = growthStrategy,
             hashFunction = hashFunction,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
     }
 }

@@ -38,7 +38,7 @@ class BloomFilterBuilder<T> {
             toBytes = toBytes,
             strategy = strategy,
             numHashFunctions = numHashFunctions,
-            logger = logger
+            logger = logger,
         )
     }
 }

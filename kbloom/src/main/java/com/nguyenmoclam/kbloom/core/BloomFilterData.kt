@@ -11,5 +11,5 @@ data class BloomFilterData(
     val numHashFunctions: Int,
     val seed: Int,
     val fpp: Double,
-    val bitArray: List<Long>
+    val bitArray: List<Long>,
 )

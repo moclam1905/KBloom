@@ -13,12 +13,12 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.pow
 
-
 /**
  * BloomFilter using MurmurHash3 (32-bit)
  * - T: type of the value to be stored in the BloomFilter
  * Reference: https://en.wikipedia.org/wiki/Bloom_filter#
  */
+@Suppress("LongParameterList")
 class BloomFilter<T> private constructor(
     private val bitSetSize: Int,
     private val numHashFunctions: Int,
@@ -27,7 +27,7 @@ class BloomFilter<T> private constructor(
     private val hashFunction: HashFunction,
     private val toBytes: (T) -> ByteArray,
     private val fpp: Double,
-    private val logger: Logger = NoOpLogger
+    private val logger: Logger = NoOpLogger,
 ) {
 
     /**
@@ -57,7 +57,6 @@ class BloomFilter<T> private constructor(
         }
     }
 
-
     /**
      * Check if the BloomFilter might contain the T value
      * return True if the value might be in the BloomFilter (but not guaranteed)
@@ -70,7 +69,7 @@ class BloomFilter<T> private constructor(
         logger.log("Checking value: $value")
         val bytes = toBytes(value)
         for (i in 0 until numHashFunctions) {
-            //val hashVal = murmurHash(value, seed + i)
+            // val hashVal = murmurHash(value, seed + i)
             val hashVal = hashFunction.hash(bytes, seed + i)
             val index = (hashVal % bitSetSize).absoluteIndex(bitSetSize)
             if (!bitArray.get(index)) {
@@ -107,7 +106,7 @@ class BloomFilter<T> private constructor(
          * @param seed: seed value for MurMurHash (default 0)
          * @param numHashFunctions: number of hash functions to use (if not specified, will be calculated)
          * @param hashFunction: function to convert T to ByteArray
-         * @param logger: logger to log messages (default: DefaultLogger)
+         * @param logger: logger to log messages (default: NoOpLogger)
          */
         fun <T> create(
             expectedInsertions: Int,
@@ -116,8 +115,8 @@ class BloomFilter<T> private constructor(
             numHashFunctions: Int? = null,
             toBytes: (T) -> ByteArray,
             strategy: HashFunctionStrategy = HashFunctionStrategy.OPTIMAL,
-            hashFunction: HashFunction,// hashFunction: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            hashFunction: HashFunction,
+            logger: Logger = NoOpLogger,
         ): BloomFilter<T> {
             if (expectedInsertions <= 0) {
                 throw InvalidConfigurationException("expectedInsertions must be > 0")
@@ -130,7 +129,7 @@ class BloomFilter<T> private constructor(
             val k = when (strategy) {
                 HashFunctionStrategy.OPTIMAL -> OptimalCalculations.optimalNumHashFunctions(
                     expectedInsertions,
-                    m
+                    m,
                 )
 
                 HashFunctionStrategy.CUSTOM -> {
@@ -149,7 +148,7 @@ class BloomFilter<T> private constructor(
                 hashFunction = hashFunction,
                 toBytes = toBytes,
                 fpp = fpp,
-                logger = logger
+                logger = logger,
             )
         }
 
@@ -163,7 +162,7 @@ class BloomFilter<T> private constructor(
             numHashFunctions: Int,
             toBytes: (T) -> ByteArray,
             hashFunction: HashFunction,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): BloomFilter<T> {
             if (bitSetSize <= 0) {
                 throw InvalidConfigurationException("expectedInsertions must be > 0")
@@ -180,7 +179,7 @@ class BloomFilter<T> private constructor(
                 hashFunction = hashFunction,
                 toBytes = toBytes,
                 fpp = fpp,
-                logger = logger
+                logger = logger,
             )
         }
 
@@ -196,7 +195,7 @@ class BloomFilter<T> private constructor(
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
             fpp: Double,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): BloomFilter<T> {
             logger.log("Restoring BloomFilter with m = $bitSetSize, k = $numHashFunctions, seed = $seed")
             return BloomFilter(
@@ -207,10 +206,9 @@ class BloomFilter<T> private constructor(
                 hashFunction = hashFunction,
                 toBytes = toBytes,
                 fpp = fpp,
-                logger = logger
+                logger = logger,
             )
         }
-
 
         /**
          * Deserialize the byte array to a BloomFilter
@@ -223,7 +221,7 @@ class BloomFilter<T> private constructor(
             format: SerializationFormat = SerializationFormat.BYTE_ARRAY,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): BloomFilter<T> {
             logger.log("Deserialization Bloom Filter with format : $format")
             val serializer: Serializer<T> = SerializerFactory.getSerializer(format)
@@ -231,7 +229,7 @@ class BloomFilter<T> private constructor(
                 data = byteArray,
                 hashFunction = hashFunction,
                 logger = logger,
-                toBytes = toBytes
+                toBytes = toBytes,
             )
         }
     }
@@ -319,5 +317,4 @@ class BloomFilter<T> private constructor(
         val p = (1 - exp(exponent)).pow(numHashFunctions)
         return p
     }
-
 }

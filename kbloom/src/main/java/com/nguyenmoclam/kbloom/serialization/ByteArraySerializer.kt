@@ -38,7 +38,7 @@ class ByteArraySerializer<T> : Serializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): BloomFilter<T> {
         if (data.size < 20) {
             throw DeserializationException("Data too small to contain Bloom Filter header")
@@ -72,7 +72,7 @@ class ByteArraySerializer<T> : Serializer<T> {
             hashFunction = hashFunction,
             toBytes = toBytes,
             fpp = fpp,
-            logger = logger
+            logger = logger,
         )
     }
 }

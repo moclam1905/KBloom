@@ -18,7 +18,6 @@ object OptimalCalculations {
         val kf = (m.toDouble() / expectedInsertions.toDouble()) * ln(2.0)
         val k = kf.roundToInt()
         return if (k < 1) 1 else k
-
     }
 
     /**
@@ -28,6 +27,5 @@ object OptimalCalculations {
 
     fun optimalBitSetSize(expectedInsertions: Int, fpp: Double): Int {
         return ceil(-(expectedInsertions * ln(fpp)) / (ln(2.0).pow(2))).toInt()
-
     }
 }

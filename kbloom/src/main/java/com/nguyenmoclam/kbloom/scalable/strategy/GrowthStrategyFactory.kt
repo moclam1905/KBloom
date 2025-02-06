@@ -4,7 +4,7 @@ object GrowthStrategyFactory {
     private val strategies = mapOf(
         "DefaultGrowthStrategy" to DefaultGrowthStrategy,
         "GeometricScalingGrowthStrategy" to GeometricScalingGrowthStrategy,
-        "TighteningScalingGrowthStrategy" to TighteningScalingGrowthStrategy
+        "TighteningScalingGrowthStrategy" to TighteningScalingGrowthStrategy,
 
     )
 

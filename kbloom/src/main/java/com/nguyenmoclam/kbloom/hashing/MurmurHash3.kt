@@ -4,14 +4,13 @@ object MurmurHash3 : HashFunction {
     private fun fmix32(h: Int): Int {
         var f = h
         f = f xor (f ushr 16)
-        f *= -0x7a143595 //0x85ebca6b
+        f *= -0x7a143595 // 0x85ebca6b
         f = f xor (f ushr 13)
-        f *= -0x3d4d51cb //0xc2b2ae35
+        f *= -0x3d4d51cb // 0xc2b2ae35
         f = f xor (f ushr 16)
 
         return f
     }
-
 
     /**
      * Generates 32 bit hash .
@@ -32,9 +31,9 @@ object MurmurHash3 : HashFunction {
         var i = offset
         while (i < roundedEnd) {
             var k1 = (bytes[i].toInt() and 0xFF) or
-                    ((bytes[i + 1].toInt() and 0xFF) shl 8) or
-                    ((bytes[i + 2].toInt() and 0xFF) shl 16) or
-                    ((bytes[i + 3].toInt() and 0xFF) shl 24)
+                ((bytes[i + 1].toInt() and 0xFF) shl 8) or
+                ((bytes[i + 2].toInt() and 0xFF) shl 16) or
+                ((bytes[i + 3].toInt() and 0xFF) shl 24)
 
             i += 4
 
@@ -45,10 +44,9 @@ object MurmurHash3 : HashFunction {
             h1 = h1 xor k1
             h1 = Integer.rotateLeft(h1, 13)
             h1 = h1 * 5 + -0x19ab949c // 0xe6546b64
-
         }
 
-        //processing tail (remaining bytes)
+        // processing tail (remaining bytes)
         var k1 = 0
         when (length and 3) {
             3 -> {
@@ -61,7 +59,6 @@ object MurmurHash3 : HashFunction {
                 k1 *= c2
 
                 h1 = h1 xor k1
-
             }
 
             2 -> {

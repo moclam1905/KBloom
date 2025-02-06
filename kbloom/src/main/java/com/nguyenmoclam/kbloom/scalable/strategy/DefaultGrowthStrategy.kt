@@ -8,8 +8,8 @@ import kotlin.math.roundToInt
  * Increase the size of the bit set by fixed ratio
  */
 object DefaultGrowthStrategy : GrowthStrategy {
-    private val GROW_FACTOR: Double = 2.0
-    private val TIGHTENING_RATIO: Double = 0.9
+    private const val GROW_FACTOR: Double = 2.0
+    private const val TIGHTENING_RATIO: Double = 0.9
     override fun calculateBitSetSize(previousFilter: BloomFilter<*>): Int {
         require(GROW_FACTOR > 1.0) { "Growth factory must be greater than 1.0" }
         val newSize = (previousFilter.getBitSetSize() * GROW_FACTOR).toInt()
@@ -25,5 +25,4 @@ object DefaultGrowthStrategy : GrowthStrategy {
     override fun calculateFpp(previousFpp: Double): Double {
         return previousFpp
     }
-
 }

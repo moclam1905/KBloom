@@ -33,14 +33,13 @@ class CountingByteArraySerializer<T> : CountingBloomFilterSerializer<T> {
 
         logger.log("CountingBloomFilter: Serialization to ByteArray complete")
         return byteBuffer.array()
-
     }
 
     override fun deserialize(
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): CountingBloomFilter<T> {
         logger.log("CountingBloomFilter: Deserializing from ByteArray")
         if (data.size < 16) {
@@ -76,7 +75,7 @@ class CountingByteArraySerializer<T> : CountingBloomFilterSerializer<T> {
                 hashFunction = hashFunction,
                 toBytes = toBytes,
                 counters = counters,
-                logger = logger
+                logger = logger,
             )
             logger.log("CountingBloomFilter: Deserialization from ByteArray complete")
             return cbf

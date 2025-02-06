@@ -2,8 +2,8 @@ package com.nguyenmoclam.kbloom.serialization
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.nguyenmoclam.kbloom.core.BloomFilterData
 import com.nguyenmoclam.kbloom.core.BloomFilter
+import com.nguyenmoclam.kbloom.core.BloomFilterData
 import com.nguyenmoclam.kbloom.hashing.HashFunction
 import com.nguyenmoclam.kbloom.logging.Logger
 import org.msgpack.jackson.dataformat.MessagePackMapper
@@ -25,7 +25,7 @@ class MessagePackSerializer<T> : Serializer<T> {
             numHashFunctions = numHashFunctions,
             seed = seed,
             fpp = fpp,
-            bitArray = bitArray.toList()
+            bitArray = bitArray.toList(),
         )
         val bytes = mapper.writeValueAsBytes(serializedData)
         logger.log("Serialization to MessagePack complete")
@@ -36,7 +36,7 @@ class MessagePackSerializer<T> : Serializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): BloomFilter<T> {
         logger.log("Deserializing from MessagePack")
         val mapper = MessagePackMapper().apply {
@@ -57,8 +57,7 @@ class MessagePackSerializer<T> : Serializer<T> {
             hashFunction = hashFunction,
             toBytes = toBytes,
             fpp = fpp,
-            logger = logger
+            logger = logger,
         )
     }
-
 }

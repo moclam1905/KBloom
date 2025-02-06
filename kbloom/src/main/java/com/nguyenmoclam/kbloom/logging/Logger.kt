@@ -18,4 +18,3 @@ interface Logger {
         log("ERROR: $message")
     }
 }
-

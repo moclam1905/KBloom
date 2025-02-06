@@ -12,5 +12,5 @@ data class ScalableBloomFilterData(
     val fpp: Double,
     val growthStrategy: String,
     val seed: Int,
-    val bloomFilters: List<BloomFilterData>
+    val bloomFilters: List<BloomFilterData>,
 )

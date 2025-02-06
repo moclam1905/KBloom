@@ -4,11 +4,13 @@ import com.nguyenmoclam.kbloom.configuration.BloomFilterBuilder
 import com.nguyenmoclam.kbloom.core.BloomFilter
 import com.nguyenmoclam.kbloom.hashing.MurmurHash3
 import com.nguyenmoclam.kbloom.logging.NoOpLogger
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.exp
 import kotlin.math.pow
 
+@Suppress("MaxLineLength")
 class BloomFilterEstimateTests {
     @Test
     fun testEstimateCurrentNumberOfElements() {
@@ -35,7 +37,7 @@ class BloomFilterEstimateTests {
         // Check the difference between estimated and actual elements
         assertTrue(
             "Estimated elements ($estimatedElements) should be within $tolerance of actual elements ($actualElements)",
-            kotlin.math.abs(estimatedElements - actualElements) <= tolerance
+            kotlin.math.abs(estimatedElements - actualElements) <= tolerance,
         )
     }
 
@@ -60,7 +62,7 @@ class BloomFilterEstimateTests {
         // use n = 500
         val expectedFpp =
             (1 - exp(-bloomFilter.getNumHashFunctions() * 500.0 / bloomFilter.getBitSetSize())).pow(
-                bloomFilter.getNumHashFunctions()
+                bloomFilter.getNumHashFunctions(),
             )
         val tolerance = 0.001 // 0.1%
 
@@ -68,7 +70,7 @@ class BloomFilterEstimateTests {
             "Estimated false positive rate ($estimatedFpp) should be approximately $expectedFpp within tolerance $tolerance",
             expectedFpp,
             estimatedFpp,
-            tolerance
+            tolerance,
         )
     }
 
@@ -97,7 +99,7 @@ class BloomFilterEstimateTests {
             "Estimated false positive rate ($estimatedFpp) should be approximately $fpp within tolerance $tolerance",
             fpp,
             estimatedFpp,
-            tolerance
+            tolerance,
         )
     }
 
@@ -122,7 +124,7 @@ class BloomFilterEstimateTests {
             "Estimated elements should be 0 when Bloom Filter is empty",
             0.0,
             estimatedElements,
-            0.0001
+            0.0001,
         )
 
         // False positive rate should be 0 because no bits are set
@@ -130,9 +132,7 @@ class BloomFilterEstimateTests {
             "Estimated false positive rate should be 0 when Bloom Filter is empty",
             0.0,
             estimatedFpp,
-            0.0001
+            0.0001,
         )
     }
 }
-
-

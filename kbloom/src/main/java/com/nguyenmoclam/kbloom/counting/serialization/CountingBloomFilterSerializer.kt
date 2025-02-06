@@ -24,6 +24,6 @@ interface CountingBloomFilterSerializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): CountingBloomFilter<T>
 }

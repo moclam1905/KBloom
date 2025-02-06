@@ -7,6 +7,7 @@ import com.nguyenmoclam.kbloom.serialization.SerializationFormat
 import org.junit.Test
 import java.nio.ByteBuffer
 
+@Suppress("MaxLineLength")
 class BloomFilterGenericTypeTest {
     @Test
     fun testBFIntType() {
@@ -21,8 +22,8 @@ class BloomFilterGenericTypeTest {
         bfInt.put(42)
         bfInt.put(100)
 
-        println(bfInt.mightContain(42))    // true
-        println(bfInt.mightContain(7))     // false (might be false positive with fpp = 0.01))
+        println(bfInt.mightContain(42)) // true
+        println(bfInt.mightContain(7)) // false (might be false positive with fpp = 0.01))
 
         val serialized = bfInt.serialize()
 
@@ -30,12 +31,10 @@ class BloomFilterGenericTypeTest {
             byteArray = serialized,
             format = SerializationFormat.BYTE_ARRAY,
             hashFunction = MurmurHash3,
-            toBytes = { ByteBuffer.allocate(4).putInt(it).array() }
+            toBytes = { ByteBuffer.allocate(4).putInt(it).array() },
         )
 
         println(restored.mightContain(42)) // true
-
-
     }
 
     data class User(val id: Int, val name: String)
@@ -61,9 +60,7 @@ class BloomFilterGenericTypeTest {
 
         println(bfUser.mightContain(user1))
         println(bfUser.mightContain(User(3, "XXX")))
-
     }
-
 
     @Test
     fun testBfWithList() {
@@ -117,7 +114,5 @@ class BloomFilterGenericTypeTest {
 
         println(bfMap.mightContain(map1))
         println(bfMap.mightContain(mapOf("id" to 3, "name" to "C")))
-
     }
-
 }

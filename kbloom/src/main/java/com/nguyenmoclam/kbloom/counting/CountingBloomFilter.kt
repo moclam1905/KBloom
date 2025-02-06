@@ -1,6 +1,5 @@
 package com.nguyenmoclam.kbloom.counting
 
-import com.nguyenmoclam.kbloom.core.absoluteIndex
 import com.nguyenmoclam.kbloom.hashing.HashFunction
 import com.nguyenmoclam.kbloom.logging.Logger
 import com.nguyenmoclam.kbloom.logging.NoOpLogger
@@ -13,6 +12,7 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.pow
 
+@Suppress("LongParameterList")
 class CountingBloomFilter<T> private constructor(
     private val bitSetSize: Int,
     private val numHashFunctions: Int,
@@ -21,7 +21,7 @@ class CountingBloomFilter<T> private constructor(
     private val seed: Int,
     private val hashFunction: HashFunction,
     private val toBytes: (T) -> ByteArray,
-    private val logger: Logger = NoOpLogger
+    private val logger: Logger = NoOpLogger,
 ) {
 
     init {
@@ -48,7 +48,6 @@ class CountingBloomFilter<T> private constructor(
                 counters[index]++
             }
         }
-
     }
 
     /**
@@ -149,7 +148,7 @@ class CountingBloomFilter<T> private constructor(
             seed: Int,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): CountingBloomFilter<T> {
             val counters = IntArray(bitSetSize) { 0 }
             return CountingBloomFilter(
@@ -160,7 +159,7 @@ class CountingBloomFilter<T> private constructor(
                 seed,
                 hashFunction,
                 toBytes,
-                logger
+                logger,
             )
         }
 
@@ -171,7 +170,7 @@ class CountingBloomFilter<T> private constructor(
             seed: Int = 0,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): CountingBloomFilter<T> {
             if (expectedInsertions <= 0) {
                 throw IllegalArgumentException("expectedInsertions must be greater than 0")
@@ -191,7 +190,7 @@ class CountingBloomFilter<T> private constructor(
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
         }
 
@@ -203,7 +202,7 @@ class CountingBloomFilter<T> private constructor(
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
             counters: IntArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): CountingBloomFilter<T> {
             if (counters.size != bitSetSize) {
                 throw IllegalArgumentException("Counters size must match bitSetSize")
@@ -217,7 +216,7 @@ class CountingBloomFilter<T> private constructor(
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
         }
 
@@ -226,7 +225,7 @@ class CountingBloomFilter<T> private constructor(
             format: SerializationFormat = SerializationFormat.COUNTING_BYTE_ARRAY,
             hashFunction: HashFunction,
             toBytes: (T) -> ByteArray,
-            logger: Logger = NoOpLogger
+            logger: Logger = NoOpLogger,
         ): CountingBloomFilter<T> {
             val serializer = SerializerFactory.getCountingSerializer<T>(format)
             return serializer.deserialize(data, hashFunction, logger, toBytes)
@@ -281,6 +280,4 @@ class CountingBloomFilter<T> private constructor(
 
     private val Int.absoluteValue: Int
         get() = if (this == Int.MIN_VALUE) Int.MAX_VALUE else abs(this)
-
-
 }

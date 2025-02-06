@@ -10,6 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("MaxLineLength")
 class BloomFilterTest {
 
     @Test
@@ -37,14 +38,13 @@ class BloomFilterTest {
             byteArray = serialized,
             format = SerializationFormat.BYTE_ARRAY,
             hashFunction = MurmurHash3,
-            toBytes = { it.toByteArray(Charsets.UTF_8) }
+            toBytes = { it.toByteArray(Charsets.UTF_8) },
         )
 
         // Check if the inserted elements are in the BloomFilter
         insertedElements.forEach { element ->
             assertTrue("BloomFilter should contain $element", bfDeserialized.mightContain(element))
         }
-
 
         // Check if the not inserted elements are in the BloomFilter
         val notInsertedElements = listOf("honeydew", "kiwi", "lemon")
@@ -106,7 +106,6 @@ class BloomFilterTest {
             .toBytes { it.toByteArray(Charsets.UTF_8) }
             .build()
 
-
         bf.put("apple")
         bf.put("banana")
         bf.put("cherry")
@@ -157,7 +156,7 @@ class BloomFilterTest {
             byteArray = serializedJson,
             format = SerializationFormat.JSON,
             hashFunction = MurmurHash3,
-            toBytes = { it.toByteArray(Charsets.UTF_8) }
+            toBytes = { it.toByteArray(Charsets.UTF_8) },
         )
 
         assertTrue(bfDeserialized.mightContain("apple"))
@@ -165,7 +164,6 @@ class BloomFilterTest {
         assertFalse(bfDeserialized.mightContain("cherry"))
 
         mockLogger.clear()
-
     }
 
     @Test
@@ -189,7 +187,7 @@ class BloomFilterTest {
             format = SerializationFormat.MESSAGEPACK,
             hashFunction = MurmurHash3,
             toBytes = { it.toByteArray(Charsets.UTF_8) },
-            logger = ConsoleLogger()
+            logger = ConsoleLogger(),
         )
 
         assertTrue(bfDeserialized.mightContain("date"))

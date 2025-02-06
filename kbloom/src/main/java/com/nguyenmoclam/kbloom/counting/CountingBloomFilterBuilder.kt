@@ -4,6 +4,7 @@ import com.nguyenmoclam.kbloom.hashing.HashFunction
 import com.nguyenmoclam.kbloom.logging.Logger
 import com.nguyenmoclam.kbloom.logging.NoOpLogger
 
+@Suppress("TooManyFunctions")
 class CountingBloomFilterBuilder<T> {
     private var expectedInsertions: Int = 1000
     private var fpp: Double = 0.01
@@ -27,7 +28,6 @@ class CountingBloomFilterBuilder<T> {
     fun bitSetSize(value: Int) = apply { this.bitSetSize = value }
     fun numHashFunctions(value: Int) = apply { this.numHashFunctions = value }
 
-
     fun buildOptimal(): CountingBloomFilter<T> {
         requireNotNull(hashFunction) { "hashFunction must be set" }
         return CountingBloomFilter.createOptimal(
@@ -37,7 +37,7 @@ class CountingBloomFilterBuilder<T> {
             seed = seed,
             hashFunction = hashFunction!!,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
     }
 
@@ -53,7 +53,7 @@ class CountingBloomFilterBuilder<T> {
             seed = seed,
             hashFunction = hashFunction!!,
             toBytes = toBytes,
-            logger = logger
+            logger = logger,
         )
     }
 }

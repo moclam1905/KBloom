@@ -8,8 +8,8 @@ import com.nguyenmoclam.kbloom.logging.Logger
 import com.nguyenmoclam.kbloom.scalable.ScalableBloomFilter
 import com.nguyenmoclam.kbloom.scalable.ScalableBloomFilterData
 import com.nguyenmoclam.kbloom.scalable.strategy.GrowthStrategyFactory
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ScalableJsonSerialized<T> : ScalableSerializer<T> {
     override fun serialize(sbf: ScalableBloomFilter<T>): ByteArray {
@@ -27,9 +27,9 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
                     numHashFunctions = bf.getNumHashFunctions(),
                     seed = bf.getSeed(),
                     fpp = bf.getFpp(),
-                    bitArray = bf.getBitArray().toList()
+                    bitArray = bf.getBitArray().toList(),
                 )
-            }
+            },
         )
 
         val jsonString = Json.encodeToString(sbfData)
@@ -41,7 +41,7 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): ScalableBloomFilter<T> {
         logger.log("ScalableBloomFilter: Deserializing from Json")
         try {
@@ -56,7 +56,7 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
                 seed = sbfData.seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
             sbf.clearBloomFilters()
 
@@ -69,7 +69,7 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
                     hashFunction = hashFunction,
                     logger = logger,
                     toBytes = toBytes,
-                    bitArray = bfData.bitArray.toLongArray()
+                    bitArray = bfData.bitArray.toLongArray(),
                 )
                 sbf.addBloomFilter(bf)
             }
@@ -78,5 +78,4 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
             throw DeserializationException("Error deserializing ScalableBloomFilter from Json: ${e.message}")
         }
     }
-
 }

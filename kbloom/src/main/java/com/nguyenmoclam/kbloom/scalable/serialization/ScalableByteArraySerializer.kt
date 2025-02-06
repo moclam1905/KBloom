@@ -22,7 +22,7 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
                 numHashFunctions = bf.getNumHashFunctions(),
                 seed = bf.getSeed(),
                 fpp = bf.getFpp(),
-                bitArray = bf.getBitArray().toList()
+                bitArray = bf.getBitArray().toList(),
             )
         }
 
@@ -31,7 +31,7 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
             fpp = sbf.getFpp(),
             growthStrategy = GrowthStrategyFactory.getNameByStrategy(sbf.getGrowthStrategy()),
             seed = sbf.getSeed(),
-            bloomFilters = listBfData
+            bloomFilters = listBfData,
         )
 
         // Calculate the size of ByteBuffer needed
@@ -49,7 +49,6 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
         //     (double) fpp - 8 bytes
         //     (int) arrSize - 4 bytes
         //     (Long) bitArray - 8 bytes each element
-
 
         val growthBytes = sbfData.growthStrategy.toByteArray(Charsets.UTF_8)
         val totalFilters = sbfData.bloomFilters.size // total number of filters
@@ -95,14 +94,13 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
 
         logger.log("ScalableBloomFilter: Serialization to ByteArray complete")
         return byteBuffer.array()
-
     }
 
     override fun deserialize(
         data: ByteArray,
         hashFunction: HashFunction,
         logger: Logger,
-        toBytes: (T) -> ByteArray
+        toBytes: (T) -> ByteArray,
     ): ScalableBloomFilter<T> {
         logger.log("ScalableBloomFilter: Deserializing from ByteArray")
         val byteBuffer = ByteBuffer.wrap(data)
@@ -131,19 +129,20 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
 
                 val arrSize = byteBuffer.int
                 val arrList = mutableListOf<Long>()
-                for (j in 0 until arrSize) {
+                repeat(arrSize) {
                     arrList.add(byteBuffer.long)
                 }
+
                 val bfData = BloomFilterData(
                     bitSetSize = bitSetSize,
                     numHashFunctions = numHashFunctions,
                     seed = bfSeed,
                     fpp = bfFpp,
-                    bitArray = arrList
+                    bitArray = arrList,
                 )
 
                 listBfData.add(
-                    bfData
+                    bfData,
                 )
             }
 
@@ -155,7 +154,7 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
                 seed = seed,
                 hashFunction = hashFunction,
                 toBytes = toBytes,
-                logger = logger
+                logger = logger,
             )
 
             sbf.clearBloomFilters()
@@ -169,7 +168,7 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
                     hashFunction = hashFunction,
                     toBytes = toBytes,
                     fpp = bfd.fpp,
-                    logger = logger
+                    logger = logger,
                 )
                 sbf.addBloomFilter(bf)
             }
@@ -179,9 +178,8 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
             return sbf
         } catch (e: Exception) {
             throw DeserializationException(
-                "Error deserializing ScalableBloomFilter from ByteArray: ${e.message}"
+                "Error deserializing ScalableBloomFilter from ByteArray: ${e.message}",
             )
         }
     }
-
 }
