@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity() {
             val email = emailInput.text.toString()
             if (email.isNotEmpty()) {
                 bloomFilter.put(email)
-                bloomFilterMetrics.recordInsertion() // Record new insertion
                 updateMetricsDisplay() // Update metrics display
 
                 coroutineScope.launch {

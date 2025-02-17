@@ -5,11 +5,6 @@ import com.nguyenmoclam.kbloom.utils.OptimalCalculations
 import kotlin.math.ln
 
 class BloomFilterMetrics<T>(private val bloomFilter: BloomFilter<T>) {
-    private var insertedElements = 0
-
-    fun recordInsertion() {
-        insertedElements++
-    }
 
     fun getInsertedElements(): Int {
         // Estimate inserted elements from fill ratio and bit set size
@@ -33,7 +28,7 @@ class BloomFilterMetrics<T>(private val bloomFilter: BloomFilter<T>) {
     fun getCurrentFPP(): Double {
         return OptimalCalculations.calculateActualFPP(
             bloomFilter.getNumHashFunctions(),
-            insertedElements,
+            getInsertedElements(),
             bloomFilter.getBitSetSize(),
         )
     }
@@ -47,13 +42,14 @@ class BloomFilterMetrics<T>(private val bloomFilter: BloomFilter<T>) {
         val memoryKB = getMemoryUsage() / 1024.0
         val fpp = getCurrentFPP() * 100
         val fillRatio = getFillRatio() * 100
+        val elements = getInsertedElements()
 
         return """
             Bloom Filter Metrics:
             - Memory Usage: ${String.format("%.2f", memoryKB)} KB
             - Current FPP: ${String.format("%.4f", fpp)}%
             - Fill Ratio: ${String.format("%.2f", fillRatio)}%
-            - Inserted Elements: $insertedElements
+            - Inserted Elements: $elements
         """.trimIndent()
     }
 }

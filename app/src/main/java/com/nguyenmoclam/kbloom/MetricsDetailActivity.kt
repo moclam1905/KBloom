@@ -85,11 +85,11 @@ class MetricsDetailActivity : AppCompatActivity() {
     }
 
     private suspend fun runPerformanceTest() = withContext(Dispatchers.Default) {
-        val testSize = 1000
+        val testSize = 100000
         var falsePositives = 0
 
         val testFilter = BloomFilterBuilder<String>()
-            .expectedInsertions(bloomFilter.getBitSetSize())
+            .expectedInsertions(testSize)
             .falsePositiveProbability(bloomFilter.getFpp())
             .hashFunction(MurmurHash3)
             .toBytes { it.toByteArray(Charsets.UTF_8) }
