@@ -1,23 +1,11 @@
+![Logo](kbloom_logo.jpg)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](kbloom/LICENSE)
 [![](https://jitpack.io/v/moclam1905/KBloom.svg)](https://jitpack.io/#moclam1905/KBloom)
-
-![Logo](kbloom_logo.jpg)
 
 # KBloom
 
 KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin**. It helps you to **efficiently check** if an element **might be in a set** without storing all elements. Perfect for **memory-constrained** mobile devices!
 
-
-
-## Versions
-
-- **v1.0.0**: Initial release with core Bloom Filter functionalities.
-- **v1.1.0**: Upcoming version with support for generic data types and Counting Bloom Filter.
-- **...**
-
-
-
-## Features
 
 ### Main Features
 
@@ -26,7 +14,7 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
   - Uses `hashFuction: HashFuction` and a lambda ` toBytes: (T) -> ByteArray` to manage any data type `T`
   - Provides a private constructor plus methods `create(...)` and `restore(...)`
 - **Modular Architecture**:
-  - `hahsing` module: Different hash functions(MurmurHash3,..)
+  - `hahsing` module: Different hash functions(MurmurHash3, XxHash32)
   - `loggin` module: Pluggable loggers (`ConsoleLogger`, `NoOpLogger`)
   - `serialization` module: Serialize/deserialize to formats (`ByteArraySerializer`, `JsonSerializer`, `MessagePackSerializer`)
   - `configuation` module: Includes a builder pattern for flexiable Bloom Filter setup
@@ -41,20 +29,28 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 - **Additional Features**:
   - **Estimate Current Number of Elements** : Uses bit-count to approximate how many items the Bloom Filter already contains
   - **Probability Estimation** : Calculates a current false positive rate based on how many bit are set
-- **Integration and Utils **:
-  - `integration` module: Placeholders or adapters for frameworks(future feature)
-  - `utils` for helper extension
+
+**Scalable Bloom Filter (SBF)**
+
+Key Features:
+
+- **Automatic Expansion:** When the current filter reaches its limit (based on a load factor or heuristic), a new child **Bloom Filter** is created to continue accommodating the elements.
+- **False Positive Control:** Each child Bloom Filter can be individually configured (`bitSetSize`, `number of hash functions`, `fpp`) to maintain a consistent false positive rate.
+- **Short-Circuit Evaluation:** When checking for the existence of an element, the filters are traversed from the newest to the oldest, and the process stops as soon as a filter indicates that the element is not present.
+- **Self-Adjustment:** Utilizes a `GrowthStrategy` (e.g., Default, `Geometric`, `Tightening`) to adjust the size and configuration of the new filter, aligning with the actual insertion load.
+- **Serialization/Deserialization:** Supports storing and restoring the complete state of the SBF, including the parameters of each child Bloom Filter and the information(`name`) on the GrowthStrategy.
+
+
+**Counting Bloom Filter (CBF)**
+- **Counters Array Instead of Bit Array**: Each position stores a counter value instead of just a `0/1`.
+- **Support for Removing Elements:** It allows decreasing the counter values to "`remove`" an element, which is not typically permitted in a standard Bloom Filter.
+- **Counting Occurrences:** Provides a count(`element`) function to estimate the number of times an element has been added, based on the minimum value among the counters at the hashed positions.
+- **Memory Management & Overflows:** It is necessary to define a maximum limit for each counter (`maxCounterValue`) to prevent overflow, which can affect the counting accuracy.
 
 ### Future Features
 
-- **Scalable Bloom Filter implementation**
-- **Counting Bloom Filter**:
-  - Allow removal of elements.
 - **Kotlin Multiplatform**:
   - Use KBloom on iOS and JVM platforms.
-- **Advanced Hash Functions**:
-  - Integrate more hash functions for better performance.
-
 
 ## Installation
 
@@ -76,7 +72,7 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 
     ```groovy
     dependencies {
-       implementation 'com.github.moclam1905:KBloom:1.2.1'
+       implementation 'com.github.moclam1905:KBloom:1.3'
     }
     ```
 
@@ -181,13 +177,89 @@ assertEquals(
     tolerance
 )
 ```
+- SBF
+```kotlin
+private fun stringToBytes(string: String): ByteArray {
+        return string.toByteArray()
+    }
+@Test
+fun testSerialization() {
+    val hashFunction = MurmurHash3
+    val logger = NoOpLogger
+    val sbf = ScalableBloomFilter.create(
+        initialExpectedInsertions = 100,
+        fpp = 0.01,
+        hashFunction = hashFunction,
+        toBytes = ::stringToBytes,
+        logger = logger,
+    )
+
+    val elementsToAdd = listOf("apple", "banana", "cherry", "date", "elderberry")
+    elementsToAdd.forEach { sbf.put(it) }
+
+    val serialized = sbf.serialize()
+    val deserialized = ScalableBloomFilter.deserialize(
+        data = serialized,
+        hashFunction = hashFunction,
+        toBytes = ::stringToBytes,
+        logger = logger,
+    )
+
+    // Check elements added
+    elementsToAdd.forEach { elements ->
+        assertTrue(
+            "Element '$elements' should be contained in the SBF",
+            deserialized.mightContain(elements),
+        )
+    }
+
+    // Check elements not added
+    val elementsNotAdded = listOf("fig", "grape", "honeydew", "kiwi", "lemon")
+    elementsNotAdded.forEach { elements ->
+        assertFalse(
+            "Element '$elements' should not be contained in the SBF",
+            deserialized.mightContain(elements),
+        )
+    }
+}
+
+```
+
+-CBF 
+```kotlin
+@Test
+fun testBuildOptimalAndPutRemove() {
+    val cbf = CountingBloomFilterBuilder<String>()
+        .expectedInsertions(200)
+        .fpp(0.01)
+        .maxCounterValue(10)
+        .seed(123)
+        .hashFunction(MurmurHash3)
+        .toBytes(::toBytes)
+        .logger(NoOpLogger)
+        .buildOptimal()
+
+    cbf.put("apple")
+    assertTrue("apple should be in the filter", cbf.mightContain("apple"))
+    assertFalse("banana should not be in the filter", cbf.mightContain("banana"))
+
+    repeat(5) { cbf.put("banana") }
+    assertTrue(cbf.mightContain("banana"))
+    assertEquals("banana should have count=5", 5, cbf.count("banana"))
+
+    repeat(2) { cbf.remove("banana") }
+    assertEquals("banana count should be 3 after remove 2", 3, cbf.count("banana"))
+}
+
+```
 
 ## Documentation
 
 [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter)
 [MurmurHash](https://en.wikipedia.org/wiki/MurmurHash)
 [Medium](https://medium.com/@moclam1905/understanding-bloom-filters-with-murmurhash3-in-kotlin-22e762db8cf5)
-
+[Scalable Bloom Filter](https://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf)
+[Counting Bloom Filter](https://en.wikipedia.org/wiki/Counting_Bloom_filter#:~:text=A%20counting%20Bloom%20filter%20is%20a%20probabilistic%20data,element%20in%20a%20sequence%20exceeds%20a%20given%20threshold.)
 ## License
 
 [MIT](kbloom/LICENSE)
