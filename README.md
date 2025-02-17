@@ -82,7 +82,7 @@ There are 3 types of metrics corresponding to 3 filter types:
 
     ```groovy
     dependencies {
-       implementation 'com.github.moclam1905:KBloom:1.3'
+       implementation 'com.github.moclam1905:KBloom:1.4'
     }
     ```
 
