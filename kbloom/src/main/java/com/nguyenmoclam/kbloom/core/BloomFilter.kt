@@ -317,4 +317,9 @@ class BloomFilter<T> private constructor(
         val p = (1 - exp(exponent)).pow(numHashFunctions)
         return p
     }
+
+    /**
+     * Get the number of bits set to 1 in the bit array
+     */
+    fun getSetBitsCount(): Int = bitArray.countSetBits()
 }

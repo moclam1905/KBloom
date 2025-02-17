@@ -2,6 +2,7 @@ package com.nguyenmoclam.kbloom
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
@@ -13,6 +14,7 @@ import com.nguyenmoclam.kbloom.configuration.BloomFilterBuilder
 import com.nguyenmoclam.kbloom.core.BloomFilter
 import com.nguyenmoclam.kbloom.hashing.MurmurHash3
 import com.nguyenmoclam.kbloom.logging.NoOpLogger
+import com.nguyenmoclam.kbloom.monitoring.BloomFilterMetrics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -29,6 +31,8 @@ import java.util.Base64
 @RequiresApi(Build.VERSION_CODES.O)
 class MainActivity : AppCompatActivity() {
     private lateinit var bloomFilter: BloomFilter<String>
+    private lateinit var bloomFilterMetrics: BloomFilterMetrics<String>
+
     private lateinit var sharedPreferences: SharedPreferences
 
     private val PREFS_NAME = "BloomFilter"
@@ -48,17 +52,24 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize BloomFilter
         bloomFilter = initializeBloomFilter()
+        // Initialize BloomFilterMetrics
+        bloomFilterMetrics = BloomFilterMetrics(bloomFilter)
 
         val emailInput = findViewById<EditText>(R.id.emailInput)
         val addButton = findViewById<Button>(R.id.addButton)
         val checkButton = findViewById<Button>(R.id.checkButton)
         val resultText = findViewById<TextView>(R.id.resultText)
+        val metricsButton = findViewById<Button>(R.id.metricsButton)
+        val metricsText = findViewById<TextView>(R.id.metricsText)
 
         // add email to blacklist
         addButton.setOnClickListener {
             val email = emailInput.text.toString()
             if (email.isNotEmpty()) {
                 bloomFilter.put(email)
+                bloomFilterMetrics.recordInsertion() // Record new insertion
+                updateMetricsDisplay() // Update metrics display
+
                 coroutineScope.launch {
                     saveChannel.receiveAsFlow().debounce(1000).collect {
                         withContext(Dispatchers.IO) {
@@ -72,6 +83,17 @@ class MainActivity : AppCompatActivity() {
                 resultText.text = "Email cannot be empty"
             }
         }
+
+        // In onCreate or wherever you're launching MetricsDetailActivity
+        metricsButton.setOnClickListener {
+            val intent = Intent(this, MetricsDetailActivity::class.java).apply {
+                putExtra(MetricsDetailActivity.EXTRA_BLOOM_FILTER, bloomFilter.serialize())
+            }
+            startActivity(intent)
+        }
+
+        // Initial metrics display
+        updateMetricsDisplay()
 
         // check if email is blacklisted
         checkButton.setOnClickListener {
@@ -149,5 +171,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             null
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateMetricsDisplay() {
+        val metricsText = findViewById<TextView>(R.id.metricsText)
+        val fillRatio = bloomFilterMetrics.getFillRatio() * 100
+        metricsText.text = "Filter is ${String.format("%.2f", fillRatio)}% full"
     }
 }

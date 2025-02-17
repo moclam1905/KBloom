@@ -47,7 +47,7 @@ class LongArrayBitArray(private val size: Int, val array: LongArray = LongArray(
 /**
  * Extension function to make sure the index is always positive
  */
-fun Int.absoluteIndex(bitSetSize: Int): Int {
+internal fun Int.absoluteIndex(bitSetSize: Int): Int {
     // Because % in Kotlin can return negative number when Int is negative
     // Make sure it returns [0..bitSetSize)
     return if (this >= 0) this else (this and Int.MAX_VALUE) % bitSetSize
