@@ -8,7 +8,7 @@ plugins {
 
 
 group  = "com.github.moclam1905"
-version = "1.4"
+version = "1.4.1"
 
 
 android {
@@ -47,7 +47,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 groupId = "com.github.moclam1905"
                 artifactId = "kbloom"
-                version = "1.4"
+                version = "1.4.1"
 
                 from(components["release"])
             }
