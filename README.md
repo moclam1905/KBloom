@@ -46,7 +46,17 @@ Key Features:
 - **Support for Removing Elements:** It allows decreasing the counter values to "`remove`" an element, which is not typically permitted in a standard Bloom Filter.
 - **Counting Occurrences:** Provides a count(`element`) function to estimate the number of times an element has been added, based on the minimum value among the counters at the hashed positions.
 - **Memory Management & Overflows:** It is necessary to define a maximum limit for each counter (`maxCounterValue`) to prevent overflow, which can affect the counting accuracy.
+  
+**Monitoring in KBloom provides 4 main metrics:**
+1. **Memory Usage**: Tracks the memory used by the filter (in bytes)
+2. **Fill Ratio**: The ratio of bits/counters that are set (0.0 - 1.0)
+3. **Current FPP**: The current false positive probability
+4. **Inserted Elements**: Estimated number of elements added
 
+There are 3 types of metrics corresponding to 3 filter types:
+- **BloomFilterMetrics**: for the Standard Bloom Filter
+- **CountingBloomFilterMetrics**: for the Counting Bloom Filter
+- **ScalableBloomFilterMetrics**: for the Scalable Bloom Filter (weighted average)
 ### Future Features
 
 - **Kotlin Multiplatform**:
@@ -72,7 +82,7 @@ Key Features:
 
     ```groovy
     dependencies {
-       implementation 'com.github.moclam1905:KBloom:1.3'
+       implementation 'com.github.moclam1905:KBloom:1.4'
     }
     ```
 
@@ -225,7 +235,7 @@ fun testSerialization() {
 
 ```
 
--CBF 
+- CBF 
 ```kotlin
 @Test
 fun testBuildOptimalAndPutRemove() {
