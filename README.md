@@ -46,6 +46,12 @@ Key Features:
 - **Support for Removing Elements:** It allows decreasing the counter values to "`remove`" an element, which is not typically permitted in a standard Bloom Filter.
 - **Counting Occurrences:** Provides a count(`element`) function to estimate the number of times an element has been added, based on the minimum value among the counters at the hashed positions.
 - **Memory Management & Overflows:** It is necessary to define a maximum limit for each counter (`maxCounterValue`) to prevent overflow, which can affect the counting accuracy.
+
+**Time-to-Live Counting Bloom Filter (TtlCBF)**
+
+TtlCountingBloomFilter extends the Counting Bloom Filter by adding time-based expiration to elements. It automatically removes elements after their Time-to-Live (TTL) period expires, making it ideal for caching and temporary data storage scenarios. This feature helps maintain data freshness and automatically manages memory by removing stale entries. The filter combines the counting capabilities of CBF with efficient time-based element expiration, perfect for applications requiring both frequency tracking and automatic data cleanup.
+
+[Read more about TtlCountingBloomFilter implementation](https://medium.com/@moclam1905/introducing-ttl-for-counting-bloom-filter-e8c778b8ea18)
   
 **Monitoring in KBloom provides 4 main metrics:**
 1. **Memory Usage**: Tracks the memory used by the filter (in bytes)
@@ -82,7 +88,7 @@ There are 3 types of metrics corresponding to 3 filter types:
 
     ```groovy
     dependencies {
-       implementation 'com.github.moclam1905:KBloom:1.4'
+       implementation 'com.github.moclam1905:KBloom:1.4.1'
     }
     ```
 

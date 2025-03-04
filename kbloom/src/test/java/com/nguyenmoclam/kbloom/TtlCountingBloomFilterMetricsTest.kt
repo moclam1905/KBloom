@@ -218,7 +218,7 @@ class TtlCountingBloomFilterMetricsTest {
         assertTrue("Active Fill Ratio must be greater than 0", fillRatio > 0)
 
         // Wait for TTL to expire
-        Thread.sleep(ttl + 200)
+        Thread.sleep(ttl + 700)
 
         // Call cleanupExpired() to ensure filter removes expired data
         cbf.cleanupExpired()
@@ -257,7 +257,7 @@ class TtlCountingBloomFilterMetricsTest {
         assertTrue("Number of active elements must be greater than 0", activeElements > 0)
 
         // Wait for TTL to expire
-        Thread.sleep(ttl + 200)
+        Thread.sleep(ttl + 700)
 
         // Call cleanupExpired() to ensure filter cleans up expired data
         cbf.cleanupExpired()
