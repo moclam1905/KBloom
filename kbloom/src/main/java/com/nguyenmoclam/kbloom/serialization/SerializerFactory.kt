@@ -4,6 +4,10 @@ import com.nguyenmoclam.kbloom.counting.serialization.CountingBloomFilterSeriali
 import com.nguyenmoclam.kbloom.counting.serialization.CountingByteArraySerializer
 import com.nguyenmoclam.kbloom.counting.serialization.CountingJsonSerializer
 import com.nguyenmoclam.kbloom.counting.serialization.CountingMessagePackSerializer
+import com.nguyenmoclam.kbloom.counting.serialization.TtlCountingBloomFilterSerializer
+import com.nguyenmoclam.kbloom.counting.serialization.TtlCountingByteArraySerializer
+import com.nguyenmoclam.kbloom.counting.serialization.TtlCountingJsonSerializer
+import com.nguyenmoclam.kbloom.counting.serialization.TtlCountingMessagePackSerializer
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableByteArraySerializer
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableJsonSerialized
 import com.nguyenmoclam.kbloom.scalable.serialization.ScalableMessagePackSerializer
@@ -36,6 +40,15 @@ object SerializerFactory {
             SerializationFormat.COUNTING_BYTE_ARRAY -> CountingByteArraySerializer()
             SerializationFormat.COUNTING_JSON -> CountingJsonSerializer()
             SerializationFormat.COUNTING_MESSAGEPACK -> CountingMessagePackSerializer()
+            else -> throw IllegalArgumentException("Unsupported serialization format: $format")
+        }
+    }
+
+    fun <T> getTtlCountingSerializer(format: SerializationFormat): TtlCountingBloomFilterSerializer<T> {
+        return when (format) {
+            SerializationFormat.COUNTING_BYTE_ARRAY -> TtlCountingByteArraySerializer()
+            SerializationFormat.COUNTING_JSON -> TtlCountingJsonSerializer()
+            SerializationFormat.COUNTING_MESSAGEPACK -> TtlCountingMessagePackSerializer()
             else -> throw IllegalArgumentException("Unsupported serialization format: $format")
         }
     }
