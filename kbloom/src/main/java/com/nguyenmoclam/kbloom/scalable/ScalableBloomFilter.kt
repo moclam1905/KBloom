@@ -13,6 +13,20 @@ import com.nguyenmoclam.kbloom.serialization.SerializerFactory
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalBitSetSize
 import com.nguyenmoclam.kbloom.utils.OptimalCalculations.optimalNumHashFunctions
 
+/**
+ * A Bloom filter that grows dynamically as more elements are added.
+ * It maintains a list of underlying Bloom filters, adding a new, larger filter
+ * when the current one reaches a certain capacity threshold.
+ *
+ * **Thread Safety:** This class is **not thread-safe** for concurrent write operations
+ * (e.g., `put`, `clear`, `putAll`). Adding elements (`put`) can trigger the addition
+ * of a new internal filter, which modifies the internal list. If multiple threads access
+ * and modify the same filter instance concurrently, external synchronization (e.g., using `Mutex`,
+ * `synchronized` blocks, or thread-safe wrappers) **must** be implemented by the user
+ * to prevent data corruption or unexpected behavior (like `ConcurrentModificationException`).
+ * Read operations (e.g., `mightContain`, getters) are generally safe if performed without
+ * concurrent writes.
+ */
 @Suppress("LongParameterList")
 class ScalableBloomFilter<T> private constructor(
     private val initialExpectedInsertions: Int,

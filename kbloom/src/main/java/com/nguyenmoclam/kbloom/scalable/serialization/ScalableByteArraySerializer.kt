@@ -29,7 +29,7 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
         val sbfData = ScalableBloomFilterData(
             initialExpectedInsertions = sbf.getInitialExpectedInsertions(),
             fpp = sbf.getFpp(),
-            growthStrategy = GrowthStrategyFactory.getNameByStrategy(sbf.getGrowthStrategy()),
+            growthStrategy = GrowthStrategyFactory.getClassNameByStrategy(sbf.getGrowthStrategy()),
             seed = sbf.getSeed(),
             bloomFilters = listBfData,
         )
@@ -146,7 +146,8 @@ class ScalableByteArraySerializer<T> : ScalableSerializer<T> {
                 )
             }
 
-            val growthStrategy = GrowthStrategyFactory.getStrategyByName(growthStrategyName)
+            val growthStrategy = GrowthStrategyFactory.getStrategyByClassName(growthStrategyName) // Use new method
+                ?: throw DeserializationException("Unknown or unregistered growth strategy: $growthStrategyName")
             val sbf = ScalableBloomFilter.create(
                 initialExpectedInsertions = initialExpectedInsertions,
                 fpp = fpp,

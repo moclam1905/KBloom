@@ -20,7 +20,15 @@ import kotlin.math.pow
  * 3) Memory efficient, fast comparison.
  *
  * Each index (in counters) has lastUpdate[index] = "time slice" (calculated by sliceUnit).
- * => If currentSlice - lastUpdate[index] > ttlSlices => reset => data is expired.
+ * If currentSlice - lastUpdate[index] > ttlSlices => reset => data is expired.
+ *
+ * **Thread Safety:** This class is **not thread-safe** for concurrent write operations
+ * (e.g., `put`, `remove`, `clear`, `cleanupExpired`, `putAll`). If multiple threads access and modify
+ * the same filter instance concurrently, external synchronization (e.g., using `Mutex`,
+ * `synchronized` blocks, or thread-safe wrappers) **must** be implemented by the user
+ * to prevent data corruption or unexpected behavior. Read operations (e.g., `mightContain`,
+ * `count`, getters) are generally safe if performed without concurrent writes, but note that
+ * the state can change due to TTL expiration even without explicit writes.
  */
 class TtlCountingBloomFilter<T> private constructor(
     private val bitSetSize: Int,

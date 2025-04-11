@@ -29,6 +29,11 @@ KBloom is a **simple Bloom Filter library** for Android developed with **Kotlin*
 - **Additional Features**:
   - **Estimate Current Number of Elements** : Uses bit-count to approximate how many items the Bloom Filter already contains
   - **Probability Estimation** : Calculates a current false positive rate based on how many bit are set
+- **Thread Safety Documentation**: Added KDoc comments to clarify that filter instances require external synchronization for concurrent writes.
+- **`ToBytesUtils` Utility**: Provides pre-defined `toBytes` functions for common types (`String`, `Int`, `Long`, `Double`, `Float`, `ByteArray`, `UUID`) in `com.nguyenmoclam.kbloom.utils.ToBytesUtils` for easier filter creation.
+- **Coroutine Support (Optional)**: Offers optional `suspend` extension functions (e.g., `putSuspending`, `mightContainSuspending`) in `com.nguyenmoclam.kbloom.coroutines.KBloomCoroutines` for convenient integration with Kotlin Coroutines, running operations on appropriate dispatchers (`Dispatchers.Default` or `Dispatchers.IO`).
+- **ProGuard/R8 Consumer Rules**: Includes necessary rules in `consumer-rules.pro` to ensure proper functionality (especially serialization) in Android release builds with minification enabled.
+- **Android Parcelable Support**: Provides `Parcelable` wrapper classes (e.g., `ParcelableBloomFilterData`) in `com.nguyenmoclam.kbloom.android.parcelable` and `toParcelableData()` extension functions to easily pass filter state between Android components (Activities, Fragments, etc.). Note that `hashFunction` and `toBytes` need to be provided again upon restoration.
 
 **Scalable Bloom Filter (SBF)**
 
@@ -97,18 +102,23 @@ There are 3 types of metrics corresponding to 3 filter types:
 ### Creating a Bloom Filter
 
 ```kotlin
+import com.nguyenmoclam.kbloom.utils.ToBytesUtils // Import the utility
+
 val mockLogger = MockLogger() // for testing
 val bf = BloomFilterBuilder<String>()
     .expectedInsertions(1000)
     .falsePositiveProbability(0.01)
     .seed(42)
     .hashFunction(MurmurHash3)
-    .toBytes { it.toByteArray(Charsets.UTF_8) }
+    // Use the utility function for common types:
+    .toBytes(ToBytesUtils.stringToBytes)
+    // Or provide a custom lambda for other types:
+    // .toBytes { customObject -> customObject.serializeToBytes() }
     .logger(mockLogger)
     .build()
 
 ```
-Note: See more about exaple `toBytes` in BloomFilterGenericTypeTest.kt
+Note: See more about example `toBytes` in BloomFilterGenericTypeTest.kt
 
 ### Adding Elements
 ```kotlin
@@ -153,6 +163,59 @@ enum class SerializationFormat {
     // maybe support more serialization format in future
 }
 ```
+
+### Coroutine Usage (Optional)
+
+Use the `suspend` extension functions from `com.nguyenmoclam.kbloom.coroutines.KBloomCoroutines` within a coroutine scope:
+
+```kotlin
+import com.nguyenmoclam.kbloom.coroutines.* // Import extensions
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking // Or use lifecycleScope, viewModelScope etc.
+
+// Inside a CoroutineScope
+runBlocking { // Example scope
+    val filter = // ... create filter ...
+    filter.putSuspending("some data")
+    val exists = filter.mightContainSuspending("some data")
+    println("Exists (async)? $exists")
+
+    val serialized = filter.serializeSuspending()
+    val deserialized = deserializeBloomFilterSuspending<String>(
+        byteArray = serialized,
+        hashFunction = MurmurHash3, // Provide necessary params
+        toBytes = ToBytesUtils.stringToBytes
+    )
+    println("Deserialized check: ${deserialized.mightContainSuspending("some data")}")
+}
+```
+
+### Android Parcelable Usage (Optional)
+
+Use the `Parcelable...Data` wrappers and `toParcelableData()` extension from `com.nguyenmoclam.kbloom.android.parcelable` to pass filter state between components.
+
+```kotlin
+// In Activity A: Create filter and parcelable data
+val filter = // ... create filter ...
+val parcelableData = filter.toParcelableData() // Convert to parcelable wrapper
+val intent = Intent(this, ActivityB::class.java)
+intent.putExtra("bloom_filter_data", parcelableData)
+startActivity(intent)
+
+// In Activity B: Receive and restore filter
+// Note: Requires Android SDK classes (Intent, Parcelable)
+val receivedData = intent.getParcelableExtra<ParcelableBloomFilterData>("bloom_filter_data")
+val restoredFilter = receivedData?.restoreFilter(
+    hashFunction = MurmurHash3, // Must provide again
+    toBytes = ToBytesUtils.stringToBytes // Must provide again
+)
+if (restoredFilter != null) {
+    // Use the restored filter
+    val check = restoredFilter.mightContain("some_value_from_activity_A")
+}
+```
+
+
 ### Additional Features
 -`testEstimateCurrentNumberOfElements`
 ```kotlin

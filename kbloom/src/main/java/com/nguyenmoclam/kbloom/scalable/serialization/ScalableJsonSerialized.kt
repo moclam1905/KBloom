@@ -19,7 +19,7 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
         val sbfData = ScalableBloomFilterData(
             initialExpectedInsertions = sbf.getInitialExpectedInsertions(),
             fpp = sbf.getFpp(),
-            growthStrategy = GrowthStrategyFactory.getNameByStrategy(sbf.getGrowthStrategy()),
+            growthStrategy = GrowthStrategyFactory.getClassNameByStrategy(sbf.getGrowthStrategy()), // Use new method
             seed = sbf.getSeed(),
             bloomFilters = sbf.getBloomFilters().map { bf ->
                 BloomFilterData(
@@ -48,7 +48,8 @@ class ScalableJsonSerialized<T> : ScalableSerializer<T> {
             val jsonString = data.toString(Charsets.UTF_8)
             val sbfData = Json.decodeFromString<ScalableBloomFilterData>(jsonString)
 
-            val strategy = GrowthStrategyFactory.getStrategyByName(sbfData.growthStrategy)
+            val strategy = GrowthStrategyFactory.getStrategyByClassName(sbfData.growthStrategy) // Use new method
+                ?: throw DeserializationException("Unknown or unregistered growth strategy: ${sbfData.growthStrategy}")
             val sbf = ScalableBloomFilter.create(
                 initialExpectedInsertions = sbfData.initialExpectedInsertions,
                 fpp = sbfData.fpp,

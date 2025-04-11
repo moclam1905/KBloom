@@ -1,6 +1,6 @@
 package com.nguyenmoclam.kbloom.scalable.serialization
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule // Keep import
 import com.nguyenmoclam.kbloom.core.BloomFilter
 import com.nguyenmoclam.kbloom.core.BloomFilterData
 import com.nguyenmoclam.kbloom.core.errors.DeserializationException
@@ -9,7 +9,7 @@ import com.nguyenmoclam.kbloom.logging.Logger
 import com.nguyenmoclam.kbloom.scalable.ScalableBloomFilter
 import com.nguyenmoclam.kbloom.scalable.ScalableBloomFilterData
 import com.nguyenmoclam.kbloom.scalable.strategy.GrowthStrategyFactory
-import org.msgpack.jackson.dataformat.MessagePackMapper
+import org.msgpack.jackson.dataformat.MessagePackMapper // Keep import
 
 class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
     private val mapper = MessagePackMapper().apply {
@@ -33,7 +33,7 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
         val sbfData = ScalableBloomFilterData(
             initialExpectedInsertions = sbf.getInitialExpectedInsertions(),
             fpp = sbf.getFpp(),
-            growthStrategy = GrowthStrategyFactory.getNameByStrategy(sbf.getGrowthStrategy()),
+            growthStrategy = GrowthStrategyFactory.getClassNameByStrategy(sbf.getGrowthStrategy()), // Use new method
             seed = sbf.getSeed(),
             bloomFilters = bfListData,
         )
@@ -52,7 +52,8 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
         logger.log("ScalableBloomFilter: Deserializing from MessagePack")
         try {
             val sbfData = mapper.readValue(data, ScalableBloomFilterData::class.java)
-            val strategy = GrowthStrategyFactory.getStrategyByName(sbfData.growthStrategy)
+            val strategy = GrowthStrategyFactory.getStrategyByClassName(sbfData.growthStrategy) // Use new method
+                ?: throw DeserializationException("Unknown or unregistered growth strategy: ${sbfData.growthStrategy}")
             val sbf = ScalableBloomFilter.create(
                 initialExpectedInsertions = sbfData.initialExpectedInsertions,
                 fpp = sbfData.fpp,
@@ -63,7 +64,8 @@ class ScalableMessagePackSerializer<T> : ScalableSerializer<T> {
                 logger = logger,
             )
             sbf.clearBloomFilters()
-            sbfData.bloomFilters.forEach { bfData ->
+            // Explicitly type bfData to resolve ambiguity
+            sbfData.bloomFilters.forEach { bfData: BloomFilterData ->
                 val bf = BloomFilter.restore(
                     bitSetSize = bfData.bitSetSize,
                     numHashFunctions = bfData.numHashFunctions,

@@ -12,6 +12,17 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.pow
 
+/**
+ * A Bloom filter variant that allows for approximate counting of element insertions and deletions.
+ * It uses an array of counters instead of a bit array.
+ *
+ * **Thread Safety:** This class is **not thread-safe** for concurrent write operations
+ * (e.g., `put`, `remove`, `clear`, `putAll`). If multiple threads access and modify
+ * the same filter instance concurrently, external synchronization (e.g., using `Mutex`,
+ * `synchronized` blocks, or thread-safe wrappers) **must** be implemented by the user
+ * to prevent data corruption or unexpected behavior. Read operations (e.g., `mightContain`,
+ * `count`, getters) are generally safe if performed without concurrent writes.
+ */
 @Suppress("LongParameterList")
 class CountingBloomFilter<T> private constructor(
     private val bitSetSize: Int,

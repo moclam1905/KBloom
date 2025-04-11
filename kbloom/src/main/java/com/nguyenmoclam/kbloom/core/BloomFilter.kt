@@ -14,9 +14,16 @@ import kotlin.math.ln
 import kotlin.math.pow
 
 /**
- * BloomFilter using MurmurHash3 (32-bit)
+ * BloomFilter using a provided [HashFunction].
  * - T: type of the value to be stored in the BloomFilter
  * Reference: https://en.wikipedia.org/wiki/Bloom_filter#
+ *
+ * **Thread Safety:** This class is **not thread-safe** for concurrent write operations
+ * (e.g., `put`, `clear`, `putAll`). If multiple threads access and modify
+ * the same filter instance concurrently, external synchronization (e.g., using `Mutex`,
+ * `synchronized` blocks, or thread-safe wrappers) **must** be implemented by the user
+ * to prevent data corruption or unexpected behavior. Read operations (e.g., `mightContain`,
+ * getters) are generally safe if performed without concurrent writes.
  */
 @Suppress("LongParameterList")
 class BloomFilter<T> private constructor(

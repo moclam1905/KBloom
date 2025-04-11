@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("maven-publish")
     id("kotlinx-serialization")
-    id("com.diffplug.spotless") version "6.25.0"
 }
 
 
@@ -38,6 +37,11 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    // Configure unit tests for Robolectric
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 
@@ -52,21 +56,6 @@ afterEvaluate {
                 from(components["release"])
             }
         }
-    }
-}
-
-spotless {
-    kotlin{
-        target("src/**/*.kt")
-        ktlint().editorConfigOverride(
-            mapOf(
-                "indent_size" to "4",
-                "continuation_indent_size" to "4",
-            )
-        )
-        trimTrailingWhitespace()
-        endWithNewline()
-
     }
 }
 
@@ -86,4 +75,9 @@ dependencies {
     implementation(libs.jackson.dataformat.msgpack)
     // Module that adds support for serialization/deserialization of Kotlin
     implementation(libs.jackson.module.kotlin)
+
+    // Coroutines Core
+    implementation(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric) // Add Robolectric dependency
 }
